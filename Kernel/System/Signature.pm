@@ -245,13 +245,20 @@ sub SignatureList {
         $Valid = 0;
     }
 
-    # sql
-    return $Self->{DBObject}->GetTableData(
-        What  => 'id, name',
-        Valid => $Valid,
-        Clamp => 1,
-        Table => 'signature',
+    # build SQL string
+    my $SQL = 'SELECT id, name FROM signature';
+    if ( $Valid == 1 ) {
+        $SQL .= " WHERE valid_id IN (" . join( ', ', $Self->{ValidObject}->ValidIDsGet() ) . ")";
+    }
+
+    $Self->{DBObject}->Prepare(
+        SQL => $SQL,
     );
+    my %Result;
+    while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
+        $Result{ $Row[0] } = $Row[1];
+    }
+    return %Result;
 }
 
 1;

@@ -368,16 +368,16 @@ sub AutoResponseGetByTypeQueueID {
 
 =item AutoResponseList()
 
-get a list of the Auto Responses
+get a list of Auto Responses
 
     my %AutoResponse = $AutoResponseObject->AutoResponseList();
 
-Return example:
+Returns:
 
     %AutoResponse = (
-        '1' => 'default reply (after new ticket has been created) ( 1 )',
-        '2' => 'default reject (after follow up and rejected of a closed ticket) ( 2 )',
-        '3' => 'default follow up (after a ticket follow up has been added) ( 3 )',
+        '1' => 'default reply (after new ticket has been created)',
+        '2' => 'default reject (after follow up and rejected of a closed ticket)',
+        '3' => 'default follow up (after a ticket follow up has been added)',
     );
 
 =cut
@@ -385,12 +385,16 @@ Return example:
 sub AutoResponseList {
     my ( $Self, %Param ) = @_;
 
-    return $Self->{DBObject}->GetTableData(
-        What  => 'id, name, id',
-        Valid => 0,
-        Clamp => 1,
-        Table => 'auto_response',
+    $Self->{DBObject}->Prepare(
+        SQL => 'SELECT id, name FROM auto_response',
     );
+
+    # collect results
+    my %Result;
+    while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
+        $Result{ $Row[0] } = $Row[1];
+    }
+    return %Result;
 }
 
 =item AutoResponseTypeList()
@@ -414,12 +418,16 @@ Return example:
 sub AutoResponseTypeList {
     my ( $Self, %Param ) = @_;
 
-    return $Self->{DBObject}->GetTableData(
-        What  => 'id, name',
-        Valid => 1,
-        Clamp => 1,
-        Table => 'auto_response_type',
+    $Self->{DBObject}->Prepare(
+        SQL => 'SELECT id, name FROM auto_response_type',
     );
+
+    # collect results
+    my %Result;
+    while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
+        $Result{ $Row[0] } = $Row[1];
+    }
+    return %Result;
 }
 
 =item AutoResponseQueue()
