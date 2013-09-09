@@ -305,7 +305,6 @@ sub PerlInfoGet {
             Class::Inspector
             Crypt::PasswdMD5
             CSS::Minifier
-            Date::Pcalc
             Email::Valid
             Encode::Locale
             IO::Interactive
