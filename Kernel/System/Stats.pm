@@ -13,7 +13,6 @@ use strict;
 use warnings;
 
 use MIME::Base64;
-use Date::Pcalc qw(:all);
 
 use Kernel::System::XML;
 
