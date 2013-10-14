@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<otrs_config version="1.0" init="Config">
+    <ConfigItem Name="ConfigurationWizard###0100-RootAccountPwdCheck" Required="0" Valid="1">
+        <Description Translatable="1">Checks if the root@localhost account password needs to be changed.</Description>
+        <Group>ConfigurationWizard</Group>
+        <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
+        <Setting>
+            <Hash>
+                <Item Key="Module">Kernel::System::ConfigurationWizard::RootAccountPwdCheck</Item>
+                <Item Key="Groups">
+                    <Array>
+                        <Item>admin</Item>
+                        <Item>stats</Item>
+                    </Array>
+                </Item>
+            </Hash>
+        </Setting>
+    </ConfigItem>
+    <ConfigItem Name="ConfigurationWizard###0100-FQDNCheck" Required="0" Valid="1">
+        <Description Translatable="1">Checks if the FQDN is still set to the default value.</Description>
+        <Group>ConfigurationWizard</Group>
+        <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
+        <Setting>
+            <Hash>
+                <Item Key="Module">Kernel::System::ConfigurationWizard::FQDNCheck</Item>
+                <Item Key="Groups">
+                    <Array>
+                        <Item>admin</Item>
+                    </Array>
+                </Item>
+            </Hash>
+        </Setting>
+    </ConfigItem>
+</otrs_config>

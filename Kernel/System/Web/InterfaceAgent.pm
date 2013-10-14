@@ -13,6 +13,7 @@ use strict;
 use warnings;
 
 use Kernel::Config;
+use Kernel::System::ConfigurationWizard;
 use Kernel::System::Log;
 use Kernel::System::Main;
 use Kernel::System::Encode;
@@ -154,9 +155,10 @@ sub Run {
     }
 
     # create common framework objects 2/2
-    $Self->{UserObject}    = Kernel::System::User->new( %{$Self} );
-    $Self->{GroupObject}   = Kernel::System::Group->new( %{$Self} );
-    $Self->{SessionObject} = Kernel::System::AuthSession->new( %{$Self} );
+    $Self->{UserObject}         = Kernel::System::User->new( %{$Self} );
+    $Self->{GroupObject}        = Kernel::System::Group->new( %{$Self} );
+    $Self->{SessionObject}      = Kernel::System::AuthSession->new( %{$Self} );
+    $Self->{ConfigWizardObject} = Kernel::System::ConfigurationWizard->new( %{$Self} );
 
     # application and add-on application common objects
     my %CommonObject = %{ $Self->{ConfigObject}->Get('Frontend::CommonObject') };
@@ -349,6 +351,16 @@ sub Run {
             SessionName => $Param{SessionName},
             %{$Self},
         );
+
+        # check if there are pending configuration wizard actions for this user
+        my %WizardModules = $Self->{ConfigWizardObject}->WizardModuleListGet(
+            ActionNeeded => 1,
+            UserID       => $UserData{UserID},
+        );
+
+        if (%WizardModules) {
+            $Param{RequestedURL} = 'Action=AgentWizard';
+        }
 
         # redirect with new session id and old params
         # prepare old redirect URL -- do not redirect to Login or Logout (loop)!
