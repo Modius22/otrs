@@ -26,15 +26,10 @@ my %List = $ConfigurationWizardObject->WizardModuleListGet(
     UserID => 1,
 );
 
-use Data::Dumper;
-warn Dumper( \%List );
-
-my $Count = scalar keys %List;
-
 $Self->Is(
-    $Count,
-    1,
-    'There is one check.'
+    scalar keys %List,
+    2,
+    'General checks.'
 );
 
 %List = $ConfigurationWizardObject->WizardModuleListGet(
@@ -42,6 +37,10 @@ $Self->Is(
     UserID       => 1,
 );
 
-warn Dumper( \%List );
+$Self->Is(
+    scalar keys %List,
+    1,
+    'Checks with Action needed.'
+);
 
 1;
