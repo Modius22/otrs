@@ -46,15 +46,15 @@ sub new {
     return $Self;
 }
 
-=item Check()
+=item RunRequiredCheck()
 
 Returns true if the module requires immediate action.
 
-   my $Result = $FQDNCheckModule->Check();
+   my $Result = $FQDNCheckModule->RunRequiredCheck();
 
 =cut
 
-sub Check {
+sub RunRequiredCheck {
     my ( $Self, %Param ) = @_;
 
     # test if FQDN equals default value

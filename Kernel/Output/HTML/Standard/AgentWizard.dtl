@@ -1,0 +1,35 @@
+# --
+# AgentWizard.dtl - provides HTML for wizard
+# Copyright (C) 2001-2013 OTRS AG, http://otrs.com/
+# --
+# This software comes with ABSOLUTELY NO WARRANTY. For details, see
+# the enclosed file COPYING for license information (AGPL). If you
+# did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
+# --
+
+<div class="MainBox ARIARoleMain">
+    <h1>$Text{"Configuration Wizard"}</h1>
+
+    <div class="LayoutFixedSidebar SidebarFirst">
+        <div class="SidebarColumn">
+            <h2>$Text{"Available Configuration Steps"}</h2>
+            <ul>
+                <li>First</li>
+                <li>Second</li>
+                <li>Third</li>
+                <li>First</li>
+                <li>Second</li>
+                <li>First</li>
+                <li>Second</li>
+            </ul>
+        </div>
+        <div class="ContentColumn">
+<!-- dtl:block:Content -->
+
+            $QData{"Con"}
+<!-- dtl:block:Content -->
+        </div>
+        <div class="Clear">
+        </div>
+    </div>
+</div>
