@@ -6,6 +6,7 @@
         <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
         <Setting>
             <Hash>
+                <Item Key="Name">Root Account</Item>
                 <Item Key="Module">Kernel::System::ConfigurationWizard::RootAccountPwdCheck</Item>
                 <Item Key="Groups">
                     <Array>

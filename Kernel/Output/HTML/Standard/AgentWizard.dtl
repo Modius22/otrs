@@ -14,13 +14,9 @@
         <div class="SidebarColumn">
             <h2>$Text{"Available Configuration Steps"}</h2>
             <ul>
-                <li>First</li>
-                <li>Second</li>
-                <li>Third</li>
-                <li>First</li>
-                <li>Second</li>
-                <li>First</li>
-                <li>Second</li>
+<!-- dtl:block:AvailableModule -->
+                <li><a href="$Env{"Baselink"}Action=$Env{"Action"};Module=$LQData{"Module"}">$Text{"$Data{"ModuleName"}"}</a></li>
+<!-- dtl:block:AvailableModule -->
             </ul>
         </div>
         <div class="ContentColumn">

@@ -12,6 +12,8 @@ package Kernel::Modules::AgentWizard;
 use strict;
 use warnings;
 
+use Kernel::System::ConfigurationWizard;
+
 sub new {
     my ( $Type, %Param ) = @_;
 
@@ -20,7 +22,7 @@ sub new {
     bless( $Self, $Type );
 
     # check needed objects
-    for my $NeededData (
+    for my $Needed (
         qw(
         GroupObject   ParamObject  DBObject   ModuleReg  LayoutObject
         LogObject     ConfigObject UserObject MainObject TimeObject
@@ -29,17 +31,38 @@ sub new {
         )
         )
     {
-        if ( !$Param{$NeededData} ) {
-            $Param{LayoutObject}->FatalError( Message => "Got no $NeededData!" );
+        if ( !$Param{$Needed} ) {
+            $Param{LayoutObject}->FatalError( Message => "Got no $Needed!" );
         }
-        $Self->{$NeededData} = $Param{$NeededData};
+        $Self->{$Needed} = $Param{$Needed};
     }
+
+    $Self->{ConfigurationWizardObject} = Kernel::System::ConfigurationWizard->new( %{$Self} );
 
     return $Self;
 }
 
 sub Run {
     my ( $Self, %Param ) = @_;
+
+    my %Modules = $Self->{ConfigurationWizardObject}->WizardModuleListGet(
+        UserID => $Self->{UserID},
+    );
+
+    my $Config = $Self->{ConfigObject}->Get('ConfigurationWizard');
+
+    for my $Module ( sort keys %Modules ) {
+
+        # read name from configuration
+        my $Name = $Config->{$Module}->{Name} // $Module;
+        $Self->{LayoutObject}->Block(
+            Name => 'AvailableModule',
+            Data => {
+                ModuleName => $Name,
+                Module     => $Module,
+            },
+        );
+    }
 
     # show dashboard
     $Self->{LayoutObject}->Block(

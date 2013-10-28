@@ -49,15 +49,15 @@ sub new {
     return $Self;
 }
 
-=item Check()
+=item RunRequiredCheck()
 
 Returns true if the module requires immediate action.
 
-   my $Result = $RootAccountPdwCheckModule->Check();
+   my $Result = $RootAccountPdwCheckModule->RunRequiredCheck();
 
 =cut
 
-sub Check {
+sub RunRequiredCheck {
     my ( $Self, %Param ) = @_;
 
     # create user object

@@ -148,6 +148,12 @@ sub WizardModuleListGet {
         ACTIONCHECK:
         for my $ActionCheck ( sort keys %Backends ) {
 
+            # if there is no 'module' specified in the config, action is never needed
+            if ( !$Config->{$ActionCheck}->{Module} ) {
+                delete $Backends{$ActionCheck};
+                next ACTIONCHECK;
+            }
+
             # create wizard object
             my $GenericModule = $Config->{$ActionCheck}->{Module};
             if ( !$Self->{MainObject}->Require($GenericModule) ) {
@@ -161,7 +167,7 @@ sub WizardModuleListGet {
 
             # test if action is needed
             $Self->{BackendObject} = $GenericModule->new( %{$Self} );
-            my $ActionNeeded = $Self->{BackendObject}->Check();
+            my $ActionNeeded = $Self->{BackendObject}->RunRequiredCheck();
 
             # keep check if action is needed
             next ACTIONCHECK if $ActionNeeded;
