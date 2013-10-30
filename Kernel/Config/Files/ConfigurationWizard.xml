@@ -6,8 +6,9 @@
         <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
         <Setting>
             <Hash>
-                <Item Key="Name">Root Account</Item>
+                <Item Key="Name" Translatable="1">Root Account</Item>
                 <Item Key="Module">Kernel::System::ConfigurationWizard::RootAccountPwdCheck</Item>
+                <Item Key="FrontendModule">Kernel::Output::HTML::WizardRootAccount</Item>
                 <Item Key="Groups">
                     <Array>
                         <Item>admin</Item>
@@ -16,13 +17,15 @@
             </Hash>
         </Setting>
     </ConfigItem>
-    <ConfigItem Name="ConfigurationWizard###0200-Registration" Required="0" Valid="1">
+    <ConfigItem Name="ConfigurationWizard###0200-RegistrationCheck" Required="0" Valid="1">
         <Description Translatable="1">Checks if the system is already registered.</Description>
         <Group>ConfigurationWizard</Group>
         <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
         <Setting>
             <Hash>
-                <Item Key="Module">Kernel::System::ConfigurationWizard::Registration</Item>
+                <Item Key="Name" Translatable="1">System Registration</Item>
+                <Item Key="Module">Kernel::System::ConfigurationWizard::RegistrationCheck</Item>
+                <Item Key="FrontendModule">Kernel::Output::HTML::WizardRegistration</Item>
                 <Item Key="Groups">
                     <Array>
                         <Item>admin</Item>
@@ -33,7 +36,7 @@
     </ConfigItem>
     <ConfigItem Name="Frontend::Module###AgentWizard" Required="0" Valid="1">
         <Description Translatable="1">Frontend module registration for the agent interface.</Description>
-        <Group>Framework</Group>
+        <Group>ConfigurationWizard</Group>
         <SubGroup>Frontend::Agent::ModuleRegistration</SubGroup>
         <Setting>
             <FrontendModuleReg>

@@ -7,25 +7,33 @@
 # did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
 # --
 
-<div class="MainBox ARIARoleMain">
-    <h1>$Text{"Configuration Wizard"}</h1>
+<div class="MainBox ARIARoleMain FormScreen">
+    <h1>$Text{"OTRS Wizard"}</h1>
+    <p class="AsteriskExplanation">$Text{"All fields marked with an asterisk (*) are mandatory."}</p>
+    <div class="ContentColumn">
+<!-- dtl:block:WizardList -->
+        <form action="$Env{"CGIHandle"}" method="post" enctype="multipart/form-data" name="compose" id="Wizard" class="Validate PreventMultipleSubmits">
+            <input type="hidden" name="Action" value="$Env{"Action"}"/>
+            <input type="hidden" name="Subaction" value="DisplayWizard"/>
+            <fieldset class="TableLike">
+                <label class="Mandatory" for="WizardID"><span class="Marker">*</span>$Text{"Wizard"}:</label>
+                <div class="Field">
+                    $Data{"WizardList"}
+                    <div id="WizardIDError" class="TooltipErrorMessage"><p>$Text{"This field is required."}</p></div>
+                    <div id="WizardIDServerError" class="TooltipErrorMessage"><p>$Text{"This field is required."}</p></div>
+                </div>
+                <div class="Spacing Clear"></div>
 
-    <div class="LayoutFixedSidebar SidebarFirst">
-        <div class="SidebarColumn">
-            <h2>$Text{"Available Configuration Steps"}</h2>
-            <ul>
-<!-- dtl:block:AvailableModule -->
-                <li><a href="$Env{"Baselink"}Action=$Env{"Action"};Module=$LQData{"Module"}">$Text{"$Data{"ModuleName"}"}</a></li>
-<!-- dtl:block:AvailableModule -->
-            </ul>
-        </div>
-        <div class="ContentColumn">
-<!-- dtl:block:Content -->
+                <div class="Field SpacingTop">
+                    <button class="Primary CallForAction" id="submitWizard" type="submit" value="$Text{"Select Step"}" ><span><i class="icon-cogs"></i> $Text{"Select Step"}</span></button>
+                </div>
 
-            $QData{"Con"}
-<!-- dtl:block:Content -->
+            </fieldset>
+        </form>
+<!-- dtl:block:WizardList -->
+        <div id="AJAXLoader" class="Spacing Center Hidden">
+            <span class="AJAXLoader" title="$Text{"Loading"}"></span>
         </div>
-        <div class="Clear">
-        </div>
+        <div id="ActivityDialogContent"></div>
     </div>
 </div>
