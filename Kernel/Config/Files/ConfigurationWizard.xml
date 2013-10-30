@@ -11,57 +11,18 @@
                 <Item Key="Groups">
                     <Array>
                         <Item>admin</Item>
-                        <Item>stats</Item>
                     </Array>
                 </Item>
             </Hash>
         </Setting>
     </ConfigItem>
-    <ConfigItem Name="ConfigurationWizard###0100-FQDNCheck" Required="0" Valid="1">
-        <Description Translatable="1">Checks if the FQDN is still set to the default value.</Description>
+    <ConfigItem Name="ConfigurationWizard###0200-Registration" Required="0" Valid="1">
+        <Description Translatable="1">Checks if the system is already registered.</Description>
         <Group>ConfigurationWizard</Group>
         <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
         <Setting>
             <Hash>
-                <Item Key="Module">Kernel::System::ConfigurationWizard::FQDNCheck</Item>
-                <Item Key="Groups">
-                    <Array>
-                        <Item>admin</Item>
-                    </Array>
-                </Item>
-            </Hash>
-        </Setting>
-    </ConfigItem>
-    <ConfigItem Name="ConfigurationWizard###0100-PasswordCheck" Required="0" Valid="1">
-        <Description Translatable="1">Checks if the FQDN is still set to the default value.</Description>
-        <Group>ConfigurationWizard</Group>
-        <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
-        <Setting>
-            <Hash>
-                <Item Key="Module">Kernel::System::ConfigurationWizard::PasswordCheck</Item>
-            </Hash>
-        </Setting>
-    </ConfigItem>
-    <ConfigItem Name="ConfigurationWizard###0100-PGP" Required="0" Valid="1">
-        <Description Translatable="1">Configure PGP.</Description>
-        <Group>ConfigurationWizard</Group>
-        <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
-        <Setting>
-            <Hash>
-                <Item Key="Groups">
-                    <Array>
-                        <Item>admin</Item>
-                    </Array>
-                </Item>
-            </Hash>
-        </Setting>
-    </ConfigItem>
-    <ConfigItem Name="ConfigurationWizard###0100-MailAccount" Required="0" Valid="1">
-        <Description Translatable="1">Configure Mail Accounts.</Description>
-        <Group>ConfigurationWizard</Group>
-        <SubGroup>Frontend::Agent::ConfigurationWizard</SubGroup>
-        <Setting>
-            <Hash>
+                <Item Key="Module">Kernel::System::ConfigurationWizard::Registration</Item>
                 <Item Key="Groups">
                     <Array>
                         <Item>admin</Item>
@@ -74,5 +35,11 @@
         <Description Translatable="1">Frontend module registration for the agent interface.</Description>
         <Group>Framework</Group>
         <SubGroup>Frontend::Agent::ModuleRegistration</SubGroup>
+        <Setting>
+            <FrontendModuleReg>
+                <Title>Wizard</Title>
+                <NavBarName></NavBarName>
+            </FrontendModuleReg>
+        </Setting>
     </ConfigItem>
 </otrs_config>
