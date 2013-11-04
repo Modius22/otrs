@@ -1,5 +1,5 @@
 # --
-# Kernel/Output/HTML/WizardRootAccount.pm
+# Kernel/Output/HTML/WizardRegistration.pm
 # Copyright (C) 2001-2013 OTRS AG, http://otrs.com/
 # --
 # This software comes with ABSOLUTELY NO WARRANTY. For details, see
@@ -7,7 +7,7 @@
 # did not receive this file, see http://www.gnu.org/licenses/agpl.txt.
 # --
 
-package Kernel::Output::HTML::WizardRootAccount;
+package Kernel::Output::HTML::WizardRegistration;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub Display {
     my ( $Self, %Param ) = @_;
 
     my $Output = $Self->{LayoutObject}->Output(
-        TemplateFile => 'AgentWizardRootAccount',
+        TemplateFile => 'AgentWizardRegistration',
     );
     return $Output;
 }

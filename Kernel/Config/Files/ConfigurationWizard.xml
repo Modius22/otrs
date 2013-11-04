@@ -41,7 +41,7 @@
         <Setting>
             <FrontendModuleReg>
                 <Title>Wizard</Title>
-                <NavBarName></NavBarName>
+                <NavBarName>Wizard</NavBarName>
             </FrontendModuleReg>
         </Setting>
     </ConfigItem>

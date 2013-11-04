@@ -82,6 +82,15 @@ sub Run {
         },
     );
 
+    # build output
+    my $Output .= $Self->{LayoutObject}->Header(
+        Title => 'Agent Wizard',
+    );
+    $Output .= $Self->{LayoutObject}->NavigationBar();
+    $Output .= $Self->{LayoutObject}->Output(
+        TemplateFile => 'AgentWizard',
+    );
+
     # run wizard module
     if ( $GetParam{WizardID} ) {
 
@@ -96,7 +105,7 @@ sub Run {
                 Message => "No FrontendModule registered for $GetParam{WizardID}!",
             );
         }
-
+        warn $Module;
         my $ModuleLoaded = $Self->{MainObject}->Require($Module);
 
         if ( !$ModuleLoaded ) {
@@ -106,21 +115,14 @@ sub Run {
             );
         }
 
-        my $Object = $ModuleLoaded->new(
+        my $Object = $Module->new(
             %{$Self},
             %GetParam,
         );
 
+        $Output .= $Object->Display();
     }
 
-    # build output
-    my $Output .= $Self->{LayoutObject}->Header(
-        Title => 'Agent Wizard',
-    );
-    $Output .= $Self->{LayoutObject}->NavigationBar();
-    $Output .= $Self->{LayoutObject}->Output(
-        TemplateFile => 'AgentWizard',
-    );
     $Output .= $Self->{LayoutObject}->Footer();
 
     return $Output;

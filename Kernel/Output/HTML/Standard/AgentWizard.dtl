@@ -31,9 +31,5 @@
             </fieldset>
         </form>
 <!-- dtl:block:WizardList -->
-        <div id="AJAXLoader" class="Spacing Center Hidden">
-            <span class="AJAXLoader" title="$Text{"Loading"}"></span>
-        </div>
-        <div id="ActivityDialogContent"></div>
     </div>
 </div>
