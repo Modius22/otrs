@@ -1,4 +1,16 @@
-#3.3.0 RC1 ????-??-??
+#3.3.1 ????-??-??
+ - 2013-11-02 Fixed bug#[9924](http://bugs.otrs.org/show_bug.cgi?id=9924) - Scheduler can not stop or restart correctly if was started by another host.
+ - 2013-11-01 Fixed bug#[9918](http://bugs.otrs.org/show_bug.cgi?id=9918) - Dropdown field in tree mode are not displayed in tree mode when opening CustomerTicketProcess.
+ - 2013-11-01 Fixed bug#[9840](http://bugs.otrs.org/show_bug.cgi?id=9840) - Toolbar Icons not shown correctly in IE8.
+ - 2013-11-01 Fixed bug#[9901](http://bugs.otrs.org/show_bug.cgi?id=9901) - CustomerFatalError expand/collapse error details is broken.
+ - 2013-11-01 Fixed bug#[9891](http://bugs.otrs.org/show_bug.cgi?id=9891) - Table header of dashboard widgets text misaligned.
+ - 2013-11-01 Fixed bug#[9903](http://bugs.otrs.org/show_bug.cgi?id=9903) - CustomerTicketOverview: Column header may wrap into table content.
+
+#3.3.0 RC1 2013-11-05
+ - 2013-10-31 Updated French translation, thanks to Olivier Sallou.
+ - 2013-10-31 Updated Italian translation, thanks to Luca Maranzano.
+ - 2013-10-31 Added support for Apache 2.4 in the web server configuration file.
+ - 2013-10-31 Fixed bug#[9910](http://bugs.otrs.org/show_bug.cgi?id=9910) - Startup warnings/errors with Perl 5.18.1.
  - 2013-10-29 Fixed bug#[9902](http://bugs.otrs.org/show_bug.cgi?id=9902) - Column Filters does not use NavBarFilters and other parameters.
  - 2013-10-29 Fixed bug#[9753](http://bugs.otrs.org/show_bug.cgi?id=9753) - `META HTTP-EQUIV="Refresh"` tag not stripped from HTML email.
  - 2013-10-29 Improved creation of sequences on Oracle databases to better support Oracle RAC clusters.
