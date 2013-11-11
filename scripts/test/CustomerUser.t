@@ -62,7 +62,7 @@ for my $Key ( 1 .. 3, 'ä', 'カス' ) {
     my %User = $CustomerUserObject->CustomerUserDataGet(
         User => $UserID,
     );
-
+    
     $Self->Is(
         $User{UserFirstname},
         "Firstname Test$Key",

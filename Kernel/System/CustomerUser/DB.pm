@@ -696,7 +696,7 @@ sub CustomerUserAdd {
         if ( $Entry->[5] =~ /^int$/i ) {
             if ( $Param{ $Entry->[0] } ) {
                 $Value{ $Entry->[0] }
-                    = $Self->{DBObject}->Quote( $Param{ $Entry->[0] }, 'Integer' );
+                    = $Param{ $Entry->[0] };
             }
             else {
                 $Value{ $Entry->[0] } = 0;
@@ -704,17 +704,17 @@ sub CustomerUserAdd {
         }
         else {
             if ( $Param{ $Entry->[0] } ) {
-                $Value{ $Entry->[0] }
-                    = "'" . $Self->{DBObject}->Quote( $Param{ $Entry->[0] } ) . "'";
+                $Value{ $Entry->[0] } = $Param{ $Entry->[0] };
             }
             else {
-                $Value{ $Entry->[0] } = "''";
+                $Value{ $Entry->[0] } = '';
             }
         }
     }
 
     # build insert
     my $SQL = "INSERT INTO $Self->{CustomerTable} (";
+    my @Bind;
     my %SeenKey;    # If the map contains duplicated field names, insert only once.
     MAPENTRY:
     for my $Entry ( @{ $Self->{CustomerUserMap}->{Map} } ) {
@@ -728,11 +728,17 @@ sub CustomerUserAdd {
     for my $Entry ( @{ $Self->{CustomerUserMap}->{Map} } ) {
         next if ( lc( $Entry->[0] ) eq "userpassword" );
         next if $SeenValue{ $Entry->[2] }++;
-        $SQL .= " $Value{ $Entry->[0] }, ";
+        $SQL .= " ?, ";
+        push @Bind, \$Value{ $Entry->[0] }
     }
-    $SQL .= "current_timestamp, $Param{UserID}, current_timestamp, $Param{UserID})";
+    $SQL .= "current_timestamp, ?, current_timestamp, ?)";
+    push @Bind, \$Param{UserID};
+    push @Bind, \$Param{UserID};
+
     $SQL = $Self->_ConvertTo($SQL);
-    return if !$Self->{DBObject}->Do( SQL => $SQL );
+    warn $SQL;
+    warn $Param{UserLogin};
+    return if !$Self->{DBObject}->Do( SQL => $SQL, Bind => \@Bind );
 
     # log notice
     $Self->{LogObject}->Log(
