@@ -150,24 +150,25 @@ sub CustomerName {
         # return if login is no integer
         return if $Param{UserLogin} !~ /^(\+|\-|)\d{1,16}$/;
 
-        $UserLogin = $Self->{DBObject}->Quote( $UserLogin, 'Integer' );
-
-        $SQL .= "$Self->{CustomerKey} = $UserLogin";
+        $SQL .= "$Self->{CustomerKey} = ?";
     }
     else {
 
-        $UserLogin = $Self->{DBObject}->Quote($UserLogin);
         if ( $Self->{CaseSensitive} ) {
-            $SQL .= "$Self->{CustomerKey} = '$UserLogin'";
+            $SQL .= "$Self->{CustomerKey} = ?";
         }
         else {
-            $SQL .= "LOWER($Self->{CustomerKey}) = LOWER('$UserLogin')";
+            $SQL .= "LOWER($Self->{CustomerKey}) = LOWER(?)";
         }
     }
 
     # get data
     my $SQLConvert = $Self->_ConvertTo($SQL);
-    return if !$Self->{DBObject}->Prepare( SQL => $SQLConvert, Limit => 1 );
+    return if !$Self->{DBObject}->Prepare(
+        SQL   => $SQLConvert,
+        Bind  => [ \$Param{UserLogin} ],
+        Limit => 1,
+    );
     my @NameParts;
     while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
         for my $Field (@Row) {
@@ -208,6 +209,7 @@ sub CustomerSearch {
 
     # build SQL string 1/2
     my $SQL = "SELECT $Self->{CustomerKey} ";
+    my @Bind;
     if ( $Self->{CustomerUserMap}->{CustomerUserListFields} ) {
         for my $Entry ( @{ $Self->{CustomerUserMap}->{CustomerUserListFields} } ) {
             $SQL .= ", $Entry";
@@ -249,12 +251,14 @@ sub CustomerSearch {
                 if ($SQLExt) {
                     $SQLExt .= ' OR ';
                 }
-                my $PostMasterSearch = $Self->{DBObject}->Quote( $Param{PostMasterSearch}, 'Like' );
+                my $PostMasterSearch = '%' . $Param{PostMasterSearch} . '%';
+                push @Bind, \$PostMasterSearch;
+
                 if ( $Self->{CaseSensitive} ) {
-                    $SQLExt .= " $Field LIKE '$PostMasterSearch' $LikeEscapeString ";
+                    $SQLExt .= " $Field LIKE ? ";
                 }
                 else {
-                    $SQLExt .= " LOWER($Field) LIKE LOWER('$PostMasterSearch') $LikeEscapeString ";
+                    $SQLExt .= " LOWER($Field) LIKE LOWER(?) ";
                 }
             }
             $SQL .= $SQLExt;
@@ -269,29 +273,34 @@ sub CustomerSearch {
 
             # return if login is no integer
             return if $Param{UserLogin} !~ /^(\+|\-|)\d{1,16}$/;
-
-            $SQL .= "$Self->{CustomerKey} = $UserLogin";
+            my $UserLogin = '%' . $Param{UserLogin} . '%';
+            $SQL .= "$Self->{CustomerKey} = ?";
+            push @Bind, \$UserLogin;
         }
         else {
-            $UserLogin = $Self->{DBObject}->Quote( $UserLogin, 'Like' );
             $UserLogin =~ s/\*/%/g;
+            $UserLogin = '%'. $UserLogin . '%';
+            push @Bind, \$UserLogin;
             if ( $Self->{CaseSensitive} ) {
-                $SQL .= "$Self->{CustomerKey} LIKE '$UserLogin' $LikeEscapeString";
+                $SQL .= "$Self->{CustomerKey} LIKE ?";
             }
             else {
-                $SQL .= "LOWER($Self->{CustomerKey}) LIKE LOWER('$UserLogin') $LikeEscapeString";
+                $SQL .= "LOWER($Self->{CustomerKey}) LIKE LOWER(?)";
             }
         }
     }
     elsif ( $Param{CustomerID} ) {
 
-        my $CustomerID = $Self->{DBObject}->Quote( $Param{CustomerID}, 'Like' );
+        my $CustomerID = $Param{CustomerID};
         $CustomerID =~ s/\*/%/g;
+        $CustomerID = '%'. $CustomerID . '%';
+        push @Bind, \$CustomerID;
+
         if ( $Self->{CaseSensitive} ) {
-            $SQL .= "$Self->{CustomerID} LIKE '$CustomerID' $LikeEscapeString";
+            $SQL .= "$Self->{CustomerID} LIKE ?";
         }
         else {
-            $SQL .= "LOWER($Self->{CustomerID}) LIKE LOWER('$CustomerID') $LikeEscapeString";
+            $SQL .= "LOWER($Self->{CustomerID}) LIKE LOWER(?)";
         }
     }
 
@@ -315,6 +324,7 @@ sub CustomerSearch {
     my $SQLConvert = $Self->_ConvertTo($SQL);
     return if !$Self->{DBObject}->Prepare(
         SQL   => $SQLConvert,
+        Bind  => \@Bind,
         Limit => $Self->{UserSearchListLimit},
     );
     while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
