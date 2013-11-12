@@ -13,7 +13,6 @@ use strict;
 use warnings;
 
 use Encode;
-use Encode::Locale;
 use IO::Interactive qw(is_interactive);
 
 =head1 NAME
@@ -61,13 +60,13 @@ sub new {
 
         # use "locale" as an arg to encode/decode
         if ( is_interactive(*STDIN) ) {
-            @ARGV = map { decode( locale => $_, 1 ) } @ARGV;
+#            @ARGV = map { decode( locale => $_, 1 ) } @ARGV;
         }
         if ( is_interactive(*STDOUT) ) {
-            binmode STDOUT, ":encoding(console_out)";
+            binmode STDOUT, ':utf8'; 
         }
         if ( is_interactive(*STDERR) ) {
-            binmode STDERR, ":encoding(console_out)";
+            binmode STDOUT, ':utf8'; 
         }
     }
 

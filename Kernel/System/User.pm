@@ -588,6 +588,7 @@ sub UserSearch {
 
     # build SQL string 1/2
     my $SQL    = "SELECT $Self->{UserTableUserID} ";
+    my @Bind;
     my @Fields = qw(login first_name last_name);
     if (@Fields) {
         for my $Entry (@Fields) {
@@ -598,10 +599,16 @@ sub UserSearch {
     # build SQL string 2/2
     $SQL .= " FROM $Self->{UserTable} WHERE ";
     if ( $Param{Search} ) {
-        $SQL .= $Self->{DBObject}->QueryCondition(
+
+        my %QueryCondition = $Self->{DBObject}->QueryCondition(
             Key   => \@Fields,
             Value => $Param{Search},
-        ) . ' ';
+            BindMode => 1,
+        );
+        $SQL .= $QueryCondition{SQL} . ' ';
+        for my $Value ( @{ $QueryCondition{Values} } ) {
+            push @Bind, \$Value;
+        }
     }
     elsif ( $Param{PostMasterSearch} ) {
 
@@ -624,8 +631,8 @@ sub UserSearch {
     }
     elsif ( $Param{UserLogin} ) {
         $Param{UserLogin} =~ s/\*/%/g;
-        $SQL .= " $Self->{Lower}($Self->{UserTableUser}) LIKE $Self->{Lower}('"
-            . $Self->{DBObject}->Quote( $Param{UserLogin}, 'Like' ) . "') $LikeEscapeString";
+        push @Bind, \$Param{UserLogin};
+        $SQL .= " $Self->{Lower}($Self->{UserTableUser}) LIKE ?";
     }
 
     # add valid option
@@ -635,7 +642,8 @@ sub UserSearch {
 
     # get data
     return if !$Self->{DBObject}->Prepare(
-        SQL => $SQL,
+        SQL   => $SQL,
+        Bind  => \@Bind,
         Limit => $Self->{UserSearchListLimit} || $Param{Limit},
     );
 

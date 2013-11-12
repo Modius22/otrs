@@ -1074,7 +1074,7 @@ generate SQL condition query based on a search expression
         Value => '((ABC&&DEF)&&!GHI)',
     );
 
-    for a earch condition over more columns
+    for a search condition over more columns
 
     my $SQL = $DBObject->QueryCondition(
         Key   => [ 'some_col_a', 'some_col_b' ],
