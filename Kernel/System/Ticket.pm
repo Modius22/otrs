@@ -303,8 +303,9 @@ sub TicketCheckNumber {
         UserID   => 1,
     );
 
+    HISTORYLINE:
     for my $Data ( reverse @Lines ) {
-        next if $Data->{HistoryType} ne 'Merged';
+        next HISTORYLINE if $Data->{HistoryType} ne 'Merged';
         if ( $Data->{Name} =~ /^.*\(\d+?\/(\d+?)\)$/ ) {
             return $1;
         }
@@ -1815,34 +1816,36 @@ sub TicketQueueSet {
         CreateUserID => $Param{UserID},
     );
 
-    # send move notify to queue subscriber
+    # send move notification to queue subscribers
     if ( !$Param{SendNoNotification} && $Ticket{StateType} ne 'closed' ) {
         my %Used;
         my @UserIDs = $Self->GetSubscribedUserIDsByQueueID( QueueID => $Param{QueueID} );
         if ( $Param{ForceNotificationToUserID} ) {
             push @UserIDs, @{ $Param{ForceNotificationToUserID} };
         }
+        USER:
         for my $UserID (@UserIDs) {
-            if ( !$Used{$UserID} && $UserID ne $Param{UserID} ) {
-                $Used{$UserID} = 1;
-                my %UserData = $Self->{UserObject}->GetUserData(
-                    UserID => $UserID,
-                    Valid  => 1,
-                );
-                next if !$UserData{UserSendMoveNotification};
 
-                # send agent notification
-                $Self->SendAgentNotification(
-                    Type                  => 'Move',
-                    RecipientID           => $UserID,
-                    CustomerMessageParams => {
-                        Queue => $Queue,
-                        Body => $Param{Comment} || '',
-                    },
-                    TicketID => $Param{TicketID},
-                    UserID   => $Param{UserID},
-                );
-            }
+            next USER if $Used{$UserID};
+            next USER if $UserID = $Param{UserID};
+            $Used{$UserID} = 1;
+            my %UserData = $Self->{UserObject}->GetUserData(
+                UserID => $UserID,
+                Valid  => 1,
+            );
+            next USER if !$UserData{UserSendMoveNotification};
+
+            # send agent notification
+            $Self->SendAgentNotification(
+                Type                  => 'Move',
+                RecipientID           => $UserID,
+                CustomerMessageParams => {
+                    Queue => $Queue,
+                    Body => $Param{Comment} || '',
+                },
+                TicketID => $Param{TicketID},
+                UserID   => $Param{UserID},
+            );
         }
     }
 
@@ -2390,10 +2393,11 @@ sub TicketEscalationDateCalculation {
     # calculate escalation times based on escalation properties
     my $Time = $Self->{TimeObject}->SystemTime();
     my %Data;
+    ESCALATIONTYPE:
     for my $Key ( sort keys %Map ) {
 
         # next if no escalation time for this type is given
-        next if !$Ticket{$Key};
+        next ESCALATIONTYPE if !$Ticket{$Key};
 
         # get time before or over escalation (escalation_destination_unixtime - now)
         my $TimeTillEscalation = $Ticket{$Key} - $Time;
@@ -2509,10 +2513,11 @@ sub TicketEscalationIndexBuild {
             EscalationUpdateTime   => 'escalation_update_time',
             EscalationSolutionTime => 'escalation_solution_time',
         );
+        ESCALATIONTIME:
         for my $Key ( sort keys %EscalationTimes ) {
 
             # check if table update is needed
-            next if !$Ticket{$Key};
+            next ESCALATIONTIME if !$Ticket{$Key};
 
             # update ticket table
             $Self->{DBObject}->Do(
@@ -3059,6 +3064,7 @@ sub TicketPermission {
     # run all TicketPermission modules
     if ( ref $Self->{ConfigObject}->Get('Ticket::Permission') eq 'HASH' ) {
         my %Modules = %{ $Self->{ConfigObject}->Get('Ticket::Permission') };
+        MODULE:
         for my $Module ( sort keys %Modules ) {
 
             # log try of load module
@@ -3070,7 +3076,7 @@ sub TicketPermission {
             }
 
             # load module
-            next if !$Self->{MainObject}->Require( $Modules{$Module}->{Module} );
+            next MODULE if !$Self->{MainObject}->Require( $Modules{$Module}->{Module} );
 
             # create object
             my $ModuleObject = $Modules{$Module}->{Module}->new(
@@ -3169,6 +3175,7 @@ sub TicketCustomerPermission {
     # run all CustomerTicketPermission modules
     if ( ref $Self->{ConfigObject}->Get('CustomerTicket::Permission') eq 'HASH' ) {
         my %Modules = %{ $Self->{ConfigObject}->Get('CustomerTicket::Permission') };
+        MODULE:
         for my $Module ( sort keys %Modules ) {
 
             # log try of load module
@@ -3180,7 +3187,7 @@ sub TicketCustomerPermission {
             }
 
             # load module
-            next if !$Self->{MainObject}->Require( $Modules{$Module}->{Module} );
+            next MODULE if !$Self->{MainObject}->Require( $Modules{$Module}->{Module} );
 
             # create object
             my $ModuleObject = $Modules{$Module}->{Module}->new(
@@ -3283,9 +3290,10 @@ sub GetSubscribedUserIDsByQueueID {
 
     # check if user is valid and check permissions
     my @CleanUserIDs;
+    USER:
     for my $UserID (@UserIDs) {
         my %User = $Self->{UserObject}->GetUserData( UserID => $UserID, Valid => 1 );
-        next if !%User;
+        next USER if !%User;
 
         # just send emails to permitted agents
         my %GroupMember = $Self->{GroupObject}->GroupMemberList(
@@ -4217,16 +4225,17 @@ sub TicketOwnerList {
             . ' ht.id = sh.history_type_id ORDER BY sh.id',
         Bind => [ \$Param{TicketID} ],
     );
-    my @UserID;
-    while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
-        next if !$Row[0];
-        next if $Row[0] eq 1;
-        push @UserID, $Row[0];
-    }
     my @UserInfo;
-    for my $UserID (@UserID) {
-        my %User = $Self->{UserObject}->GetUserData( UserID => $UserID, Cache => 1, Valid => 1 );
-        next if !%User;
+    USER:
+    while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
+
+        # skip userid 1 (root@localhost)
+        next USER if !$Row[0];
+        next USER if $Row[0] eq 1;
+
+        # skip invalid users, add user info to list
+        my %User = $Self->{UserObject}->GetUserData( UserID => $Row[0], Cache => 1, Valid => 1 );
+        next USER if !%User;
         push @UserInfo, \%User;
     }
     return @UserInfo;
@@ -4474,7 +4483,7 @@ sub TicketInvolvedAgentsList {
     }
 
     # db query, only entries with a known history_id are retrieved
-    my @User;
+    my @UserInfo;
     my %UsedOwner;
     return if !$Self->{DBObject}->Prepare(
         SQL => ''
@@ -4485,24 +4494,21 @@ sub TicketInvolvedAgentsList {
             . ' ORDER BY sh.id',
         Bind => [ \$Param{TicketID} ],
     );
+    USER:
     while ( my @Row = $Self->{DBObject}->FetchrowArray() ) {
 
-        # store result, skip the
-        if ( $Row[0] ne 1 && !$UsedOwner{ $Row[0] } ) {
-            $UsedOwner{ $Row[0] } = $Row[0];
-            push @User, $Row[0];
-        }
-    }
+        # skip users already on the list or root@localhost
+        next USER if $Row[0] == 1;
+        next USER if $UsedOwner{ $Row[0] };
 
-    # collect agent information
-    my @UserInfo;
-    for my $SingleUser (@User) {
+        $UsedOwner{ $Row[0] } = $Row[0];
+
+        # get user data if user is valid and add to result
         my %User = $Self->{UserObject}->GetUserData(
-            UserID => $SingleUser,
+            UserID => $Row[0],
             Valid  => 1,
-            Cache  => 1,
         );
-        next if !%User;
+        next USER if !%User;
         push @UserInfo, \%User;
     }
 
@@ -4808,7 +4814,8 @@ sub HistoryTicketGet {
     }
 
     my $CacheKey
-        = 'HistoryTicketGet::' . join( '::', map { ( $_ || 0 ) . "::$Param{$_}" } sort keys %Param );
+        = 'HistoryTicketGet::'
+        . join( '::', map { ( $_ || 0 ) . "::$Param{$_}" } sort keys %Param );
 
     my $Cached = $Self->{CacheInternalObject}->Get( Key => $CacheKey );
     if ( ref $Cached eq 'HASH' && !$Param{Force} ) {
@@ -7093,8 +7100,9 @@ sub TicketAcl {
     # check acl module
     my $Modules = $Self->{ConfigObject}->Get('Ticket::Acl::Module');
     if ($Modules) {
+        MODULE:
         for my $Module ( sort keys %{$Modules} ) {
-            next if !$Self->{MainObject}->Require( $Modules->{$Module}->{Module} );
+            next MODULE if !$Self->{MainObject}->Require( $Modules->{$Module}->{Module} );
 
             my $Generic = $Modules->{$Module}->{Module}->new(
                 %{$Self},
