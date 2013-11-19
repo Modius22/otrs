@@ -33,7 +33,7 @@ use lib dirname($RealBin) . '/Custom';
 BEGIN {
     if ( $^O eq 'MSWin32' ) {
         ## no critic
-        eval "use Win32::Console::ANSI";
+        eval 'use Win32::Console::ANSI';
         ## use critic
         $ENV{nocolors} = 1 if $@;
     }
@@ -47,7 +47,7 @@ use Term::ANSIColor;
 use Kernel::System::Environment;
 
 my $AllModules;
-GetOptions( "all" => \$AllModules );
+GetOptions( all => \$AllModules );
 
 my $Options = shift || '';
 my $NoColors;
@@ -235,7 +235,8 @@ my @NeededModules = (
 );
 
 # if we're on Windows we need some additional modules
-if ( $^O eq "MSWin32" ) {
+if ( $^O eq 'MSWin32' ) {
+
     my @WindowsModules = (
         {
             Module   => 'Win32::Daemon',
@@ -253,6 +254,7 @@ if ( $^O eq "MSWin32" ) {
 
 # try to determine module version number
 my $Depends = 0;
+
 for my $Module (@NeededModules) {
     _Check( $Module, $Depends, $NoColors );
 }
@@ -261,6 +263,7 @@ if ($AllModules) {
     print "\nBundled modules:\n\n";
 
     my %PerlInfo = Kernel::System::Environment->PerlInfoGet( BundledModules => 1, );
+
     for my $Module ( sort keys %{ $PerlInfo{Modules} } ) {
         _Check( { Module => $Module, Required => 1, }, $Depends, $NoColors );
     }
@@ -271,7 +274,13 @@ exit;
 sub _Check {
     my ( $Module, $Depends, $NoColors ) = @_;
 
-    print "  " x ( $Depends + 1 );
+    # if we're on Windows we don't need to see Apache + mod_perl modules
+    if ( $^O eq 'MSWin32' ) {
+        return if $Module->{Module} =~ m{\A Apache }xms;
+        return if $Module->{Module} =~ m{\A ModPerl }xms;
+    }
+
+    print '  ' x ( $Depends + 1 );
     print "o $Module->{Module}";
     my $Length = 33 - ( length( $Module->{Module} ) + ( $Depends * 2 ) );
     print '.' x $Length;
@@ -333,7 +342,7 @@ sub _Check {
                 print "FAILED! $ErrorMessage\n";
             }
             else {
-                print color('red') . "FAILED!" . color('reset') . " $ErrorMessage\n";
+                print color('red') . 'FAILED!' . color('reset') . " $ErrorMessage\n";
             }
         }
         else {
@@ -341,7 +350,7 @@ sub _Check {
                 print "ok (v$Version)\n";
             }
             else {
-                print color('green') . "ok" . color('reset') . " (v$Version)\n";
+                print color('green') . 'ok' . color('reset') . " (v$Version)\n";
             }
         }
     }
@@ -350,7 +359,7 @@ sub _Check {
         my $Required = $Module->{Required};
         my $Color    = 'yellow';
         if ($Required) {
-            $Required = 'required - use "perl -MCPAN -e shell;"';
+            $Required = 'required - please install this module';
             $Color    = 'red';
         }
         else {
@@ -360,7 +369,7 @@ sub _Check {
             print "Not installed! ($Required - $Comment)\n";
         }
         else {
-            print color($Color) . "Not installed!" . color('reset') . " ($Required - $Comment)\n";
+            print color($Color) . 'Not installed!' . color('reset') . " ($Required - $Comment)\n";
         }
     }
 
