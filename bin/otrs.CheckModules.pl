@@ -44,13 +44,78 @@ use File::Path;
 use Getopt::Long;
 use Term::ANSIColor;
 
+use Kernel::Config;
+use Kernel::System::Log;
+use Kernel::System::Main;
+use Kernel::System::DB;
 use Kernel::System::Environment;
+
+my $ConfigObject = Kernel::Config->new();
+my $EncodeObject = Kernel::System::Encode->new(
+    ConfigObject => $ConfigObject,
+);
+my $LogObject = Kernel::System::Log->new(
+    ConfigObject => $ConfigObject,
+    EncodeObject => $EncodeObject,
+);
+my $MainObject = Kernel::System::Main->new(
+    ConfigObject => $ConfigObject,
+    EncodeObject => $EncodeObject,
+    LogObject    => $LogObject,
+);
+my $DBObject = Kernel::System::DB->new(
+    ConfigObject => $ConfigObject,
+    EncodeObject => $EncodeObject,
+    LogObject    => $LogObject,
+    MainObject   => $MainObject,
+);
+our $EnvironmentObject = Kernel::System::Environment->new(
+    EncodeObject => $EncodeObject,
+    ConfigObject => $ConfigObject,
+    LogObject    => $LogObject,
+    MainObject   => $MainObject,
+    DBObject     => $DBObject,
+);
+
+our %OSInst = (
+    aptget  => 'apt-get install -y ##Name##',
+    ppm     => 'ppm install ##Name##',
+    gcpan   => 'g-cpan -i ##Name##',
+    yum     => 'yum install "perl(##Name##)',
+    zypper  => 'zypper install "perl(##Name##)"',
+    default => 'cpan ##Name##',
+);
+#gentoo, solaris, oracle
+our %DistToInstType = (
+    # apt-get
+    debian   => 'aptget',
+    ubuntu   => 'aptget',
+    # gcpan
+    gentoo   => 'gcpan',
+    # yum
+    fedora   => 'yum',
+    rhel     => 'yum',
+    redhat   => 'yum',
+    # zypper
+    suse     => 'zypper',
+    # ppm
+    win32as  => 'ppm',
+);
+
+my %OSData  = $EnvironmentObject->OSInfoGet();
+our $OSDist = $OSData{Distribution};
+# set win32as if active state perl is installed on windows.
+# for windows installations without active state perl we use the default.
+if ($OSData{OS} eq 'windows' && $ENV{'GATEWAY_INTERFACE'} && $ENV{'GATEWAY_INTERFACE'} eq "CGI-PerlEx") {
+    $OSDist = 'win32as';
+}
 
 my $AllModules;
 GetOptions( all => \$AllModules );
 
 my $Options = shift || '';
 my $NoColors;
+
 if ( $ENV{nocolors} || $Options =~ m{\A nocolors}msxi ) {
     $NoColors = 1;
 }
@@ -61,44 +126,44 @@ my @NeededModules = (
         Module        => 'Crypt::Eksblowfish::Bcrypt',
         Required      => 0,
         Comment       => 'For strong password hashing.',
-        Distributions => {
-            debian  => 'libcrypt-eksblowfish-perl',
-            win32as => 'Crypt-Eksblowfish',
-            }
+        InstTypes => {
+            aptget => 'libcrypt-eksblowfish-perl',
+            ppm    => 'Crypt-Eksblowfish',
+        },
     },
     {
         Module        => 'Crypt::SSLeay',
         Required      => 0,
         Comment       => 'Required for Generic Interface SOAP SSL connections.',
-        Distributions => {
-            debian  => 'libcrypt-ssleay-perl',
-            win32as => 'Crypt-SSLeay',
-            }
+        InstTypes => {
+            aptget => 'libcrypt-ssleay-perl',
+            ppm    => 'Crypt-SSLeay',
+        },
     },
     {
         Module        => 'Date::Format',
         Required      => 1,
-        Distributions => {
-            debian  => 'libtimedate-perl',
-            win32as => 'TimeDate',
-            }
+        InstTypes => {
+            aptget => 'libtimedate-perl',
+            ppm    => 'TimeDate',
+        },
     },
     {
         Module        => 'DBI',
         Required      => 1,
-        Distributions => {
-            debian  => 'libdbi-perl',
-            win32as => 'DBI',
-            }
+        InstTypes => {
+            aptget => 'libdbi-perl',
+            ppm    => 'DBI',
+        },
     },
     {
         Module        => 'DBD::mysql',
         Required      => 0,
         Comment       => 'Required to connect to a MySQL database.',
-        Distributions => {
-            debian  => 'libdbi-mysql-perl',
-            win32as => 'DBD-mysql',
-            }
+        InstTypes => {
+            aptget => 'libdbi-mysql-perl',
+            ppm    => 'DBD-mysql',
+        },
     },
     {
         Module       => 'DBD::ODBC',
@@ -111,63 +176,63 @@ my @NeededModules = (
             },
         ],
         Comment       => 'Required to connect to a MS-SQL database.',
-        Distributions => {
-            debian  => 'libdb-odbc-perl',
-            win32as => 'DBD-ODBC',
-            }
+        InstTypes => {
+            aptget => 'libdb-odbc-perl',
+            ppm    => 'DBD-ODBC',
+        },
     },
     {
         Module        => 'DBD::Oracle',
         Required      => 0,
         Comment       => 'Required to connect to a Oracle database.',
-        Distributions => {
-            win32as => 'DBD-Oracle',
-            }
+        InstTypes => {
+            ppm    => 'DBD-Oracle',
+        },
     },
     {
         Module        => 'DBD::Pg',
         Required      => 0,
         Comment       => 'Required to connect to a PostgreSQL database.',
-        Distributions => {
-            debian  => 'libdb-pg-perl',
-            win32as => 'DBD-Pg',
-            }
+        InstTypes => {
+            aptget => 'libdb-pg-perl',
+            ppm    => 'DBD-Pg',
+        },
     },
     {
         Module        => 'Encode::HanExtra',
         Version       => '0.23',
         Required      => 0,
         Comment       => 'Required to handle mails with several Chinese character sets.',
-        Distributions => {
-            debian => 'libencode-hanextra-perl',
-            }
+        InstTypes => {
+            aptget => 'libencode-hanextra-perl',
+        },
     },
     {
         Module        => 'GD',
         Required      => 0,
         Comment       => 'Required for stats.',
-        Distributions => {
-            debian  => 'libgd-gd2-perl',
-            win32as => 'GD',
+        InstTypes => {
+            aptget => 'libgd-gd2-perl',
+            ppm    => 'GD',
         },
         Depends => [
             {
                 Module        => 'GD::Text',
                 Required      => 0,
                 Comment       => 'Required for stats.',
-                Distributions => {
-                    debian  => 'libgd-text-perl',
-                    win32as => 'GDTextUtil',
-                    }
+                InstTypes => {
+                    aptget => 'libgd-text-perl',
+                    ppm    => 'GDTextUtil',
+                }
             },
             {
                 Module        => 'GD::Graph',
                 Required      => 0,
                 Comment       => 'Required for stats.',
-                Distributions => {
-                    debian  => 'libgd-graph-perl',
-                    win32as => 'GDGraph',
-                    }
+                InstTypes => {
+                    aptget => 'libgd-graph-perl',
+                    ppm    => 'GDGraph',
+                },
             },
         ],
     },
@@ -175,46 +240,46 @@ my @NeededModules = (
         Module        => 'IO::Socket::SSL',
         Required      => 0,
         Comment       => 'Required for SSL connections to web and mail servers.',
-        Distributions => {
-            debian  => 'libio-socket-ssl-perl',
-            win32as => 'IO-Socket-SSL',
-            }
+        InstTypes => {
+            aptget => 'libio-socket-ssl-perl',
+            ppm    => 'IO-Socket-SSL',
+        },
     },
     {
         Module        => 'JSON::XS',
         Required      => 0,
         Comment       => 'Recommended for faster AJAX/JavaScript handling.',
-        Distributions => {
-            debian  => 'libjson-xs-perl',
-            win32as => 'JSON-XS',
-            }
+        InstTypes => {
+            aptget => 'libjson-xs-perl',
+            ppm    => 'JSON-XS',
+        },
     },
     {
         Module        => 'LWP::UserAgent',
         Required      => 1,
-        Distributions => {
-            debian  => 'libwww-perl',
-            win32as => 'libwww-perl',
-            }
+        InstTypes => {
+            aptget => 'libwww-perl',
+            ppm    => 'libwww-perl',
+        },
     },
     {
         Module        => 'Mail::IMAPClient',
         Version       => '3.22',
         Comment       => 'Required for IMAP TLS connections.',
         Required      => 0,
-        Distributions => {
-            debian  => 'libmail-imapclient-perl',
-            win32as => 'Mail-IMAPClient',
+        InstTypes => {
+            aptget => 'libmail-imapclient-perl',
+            ppm    => 'Mail-IMAPClient',
         },
         Depends => [
             {
                 Module        => 'IO::Socket::SSL',
                 Required      => 0,
                 Comment       => 'Required for IMAP TLS connections.',
-                Distributions => {
-                    debian  => 'libio-socket-ssl-perl',
-                    win32as => 'IO-Socket-SSL',
-                    }
+                InstTypes => {
+                    aptget => 'libio-socket-ssl-perl',
+                    ppm    => 'IO-Socket-SSL',
+                },
             },
         ],
     },
@@ -222,9 +287,9 @@ my @NeededModules = (
         Module        => 'ModPerl::Util',
         Required      => 0,
         Comment       => 'Improves Performance on Apache webservers dramatically.',
-        Distributions => {
-            debian => 'libapache2-mod-perl2',
-            }
+        InstTypes => {
+            aptget => 'libapache2-mod-perl2',
+        },
     },
     {
         Module       => 'Net::DNS',
@@ -236,28 +301,28 @@ my @NeededModules = (
                     'This version is broken and not useable! Please upgrade to a higher version.',
             },
         ],
-        Distributions => {
-            debian  => 'libnet-dns-perl',
-            win32as => 'Net-DNS',
-            }
+        InstTypes => {
+            aptget => 'libnet-dns-perl',
+            ppm    => 'Net-DNS',
+        },
     },
     {
         Module        => 'Net::LDAP',
         Required      => 0,
         Comment       => 'Required for directory authentication.',
-        Distributions => {
-            debian  => 'libnet-ldap-perl',
-            win32as => 'Net-LDAP',
-            }
+        InstTypes => {
+            aptget => 'libnet-ldap-perl',
+            ppm    => 'Net-LDAP',
+        },
     },
     {
         Module        => 'Net::SSL',
         Required      => 0,
         Comment       => 'Required for Generic Interface SOAP SSL connections.',
-        Distributions => {
-            debian  => 'libcrypt-ssleay-perl',
-            win32as => 'Crypt-SSLeay',
-            }
+        InstTypes => {
+            aptget => 'libcrypt-ssleay-perl',
+            ppm    => 'Crypt-SSLeay',
+        },
     },
     {
         Module       => 'PDF::API2',
@@ -286,46 +351,46 @@ my @NeededModules = (
                     'This version is broken and not useable! Please upgrade to a higher version.',
             },
         ],
-        Distributions => {
-            debian  => 'libpdf-api2-perl',
-            win32as => 'PDF-API2',
-            }
+        InstTypes => {
+            aptget => 'libpdf-api2-perl',
+            ppm    => 'PDF-API2',
+        },
     },
     {
         Module        => 'Text::CSV_XS',
         Required      => 0,
         Comment       => 'Recommended for faster CSV handling.',
-        Distributions => {
-            debian  => 'libtext-csv-xs-perl',
-            win32as => 'Text-CSV_XS',
-            }
+        InstTypes => {
+            aptget => 'libtext-csv-xs-perl',
+            ppm    => 'Text-CSV_XS',
+        },
     },
     {
         Module        => 'Time::HiRes',
         Required      => 1,
         Comment       => 'Required for high resolution timestamps.',
-        Distributions => {
-            debian  => 'perl',
-            win32as => 'Time-HiRes',
-            }
+        InstTypes => {
+            aptget => 'perl',
+            ppm    => 'Time-HiRes',
+        },
     },
     {
         Module        => 'XML::Parser',
         Required      => 0,
         Comment       => 'Recommended for faster xml handling.',
-        Distributions => {
-            debian  => 'libxml-parser-perl',
-            win32as => 'XML-Parser',
-            }
+        InstTypes => {
+            aptget => 'libxml-parser-perl',
+            ppm    => 'XML-Parser',
+        },
     },
     {
         Module        => 'YAML::XS',
         Required      => 1,
         Comment       => 'Very important',
-        Distributions => {
-            debian  => 'libyaml-libyaml-perl',
-            win32as => 'YAML-XS',
-            }
+        InstTypes => {
+            aptget => 'libyaml-libyaml-perl',
+            ppm    => 'YAML-XS',
+        },
     },
 );
 
@@ -334,14 +399,20 @@ if ( $^O eq 'MSWin32' ) {
 
     my @WindowsModules = (
         {
-            Module   => 'Win32::Daemon',
-            Required => 1,
-            Comment  => 'For running the OTRS Scheduler Service.',
+            Module        => 'Win32::Daemon',
+            Required      => 1,
+            Comment       => 'For running the OTRS Scheduler Service.',
+            InstTypes => {
+                ppm => 'Win32-Daemon',
+            },
         },
         {
-            Module   => 'Win32::Service',
-            Required => 1,
-            Comment  => 'For running the OTRS Scheduler Service.',
+            Module        => 'Win32::Service',
+            Required      => 1,
+            Comment       => 'For running the OTRS Scheduler Service.',
+            InstTypes => {
+                ppm => 'Win32-Service',
+            },
         },
     );
     push @NeededModules, @WindowsModules;
@@ -357,7 +428,7 @@ for my $Module (@NeededModules) {
 if ($AllModules) {
     print "\nBundled modules:\n\n";
 
-    my %PerlInfo = Kernel::System::Environment->PerlInfoGet( BundledModules => 1, );
+    my %PerlInfo = $EnvironmentObject->PerlInfoGet( BundledModules => 1, );
 
     for my $Module ( sort keys %{ $PerlInfo{Modules} } ) {
         _Check( { Module => $Module, Required => 1, }, $Depends, $NoColors );
@@ -380,7 +451,7 @@ sub _Check {
     my $Length = 33 - ( length( $Module->{Module} ) + ( $Depends * 2 ) );
     print '.' x $Length;
 
-    my $Version = Kernel::System::Environment->ModuleVersionGet( Module => $Module->{Module} );
+    my $Version = $EnvironmentObject->ModuleVersionGet( Module => $Module->{Module} );
     if ($Version) {
 
         # cleanup version number
@@ -450,9 +521,19 @@ sub _Check {
         }
     }
     else {
-        my $Comment  = $Module->{Comment} ? ' - ' . $Module->{Comment} : '';
-        my $Required = $Module->{Required};
-        my $Color    = 'yellow';
+        my $Comment     = $Module->{Comment} ? ' - ' . $Module->{Comment} : '';
+        my $Required    = $Module->{Required};
+        my $Color       = 'yellow';
+        # OS Install Command
+        my $Install     = $OSInst{ $DistToInstType{$OSDist} };
+        my $PackageName = $Module->{InstTypes}->{ $DistToInstType{$OSDist} };
+        if (!$Install && !$PackageName) {
+            $Install     = $OSInst{default};
+            $PackageName = $Module->{Module};
+        }
+        $Install =~ s{\#\#Name\#\#}{$PackageName}xms;
+        $Install = "Use: '" . $Install . "'";
+
         if ($Required) {
             $Required = 'required';
             $Color    = 'red';
@@ -464,7 +545,7 @@ sub _Check {
             print "Not installed! ($Required $Comment)\n";
         }
         else {
-            print color($Color) . 'Not installed!' . color('reset') . " ($Required$Comment)\n";
+            print color($Color) . 'Not installed!' . color('reset') . " $Install ($Required$Comment)\n";
         }
     }
 
