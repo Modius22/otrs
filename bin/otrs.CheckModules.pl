@@ -78,53 +78,59 @@ our $EnvironmentObject = Kernel::System::Environment->new(
 );
 
 our %InstTypeToCMD = (
-    aptget  => {
+    aptget => {
         CMD       => 'apt-get install -y %s',
         UseModule => 0,
     },
-    ppm     => {
+    ppm => {
         CMD       => 'ppm install %s',
         UseModule => 0,
     },
-    gcpan   => {
+    gcpan => {
         CMD       => 'g-cpan -i %s',
         UseModule => 1,
     },
-    yum     => {
+    yum => {
         CMD       => 'yum install "perl(%s)',
         UseModule => 1,
     },
-    zypper  => {
+    zypper => {
         CMD       => 'zypper install "perl(%s)"',
         UseModule => 1,
     },
     default => {
-        CMD       => 'cpan %s',
-        UseModule => 1,
+        CMD => 'cpan %s',
     },
 );
+
 #gentoo, solaris, oracle
 our %DistToInstType = (
+
     # apt-get
-    debian   => 'aptget',
-    ubuntu   => 'aptget',
+    debian => 'aptget',
+    ubuntu => 'aptget',
+
     # gcpan
-    gentoo   => 'gcpan',
+    gentoo => 'gcpan',
+
     # yum
-    fedora   => 'yum',
-    rhel     => 'yum',
-    redhat   => 'yum',
+    fedora => 'yum',
+    rhel   => 'yum',
+    redhat => 'yum',
+
     # zypper
-    suse     => 'zypper',
+    suse => 'zypper',
+
     # ppm
-    win32as  => 'ppm',
+    win32as => 'ppm',
 );
 
-my %OSData  = $EnvironmentObject->OSInfoGet();
+my %OSData = $EnvironmentObject->OSInfoGet();
 our $OSDist = $OSData{Distribution};
+
 # set win32as if active state perl is installed on windows.
 # for windows installations without active state perl we use the default.
-if (_CheckActiveStatePerl()) {
+if ( _CheckActiveStatePerl() ) {
     $OSDist = 'win32as';
 }
 
@@ -141,43 +147,43 @@ if ( $ENV{nocolors} || $Options =~ m{\A nocolors}msxi ) {
 # config
 my @NeededModules = (
     {
-        Module        => 'Crypt::Eksblowfish::Bcrypt',
-        Required      => 0,
-        Comment       => 'For strong password hashing.',
+        Module    => 'Crypt::Eksblowfish::Bcrypt',
+        Required  => 0,
+        Comment   => 'For strong password hashing.',
         InstTypes => {
             aptget => 'libcrypt-eksblowfish-perl',
             ppm    => 'Crypt-Eksblowfish',
         },
     },
     {
-        Module        => 'Crypt::SSLeay',
-        Required      => 0,
-        Comment       => 'Required for Generic Interface SOAP SSL connections.',
+        Module    => 'Crypt::SSLeay',
+        Required  => 0,
+        Comment   => 'Required for Generic Interface SOAP SSL connections.',
         InstTypes => {
             aptget => 'libcrypt-ssleay-perl',
             ppm    => 'Crypt-SSLeay',
         },
     },
     {
-        Module        => 'Date::Format',
-        Required      => 1,
+        Module    => 'Date::Format',
+        Required  => 1,
         InstTypes => {
             aptget => 'libtimedate-perl',
             ppm    => 'TimeDate',
         },
     },
     {
-        Module        => 'DBI',
-        Required      => 1,
+        Module    => 'DBI',
+        Required  => 1,
         InstTypes => {
             aptget => 'libdbi-perl',
             ppm    => 'DBI',
         },
     },
     {
-        Module        => 'DBD::mysql',
-        Required      => 0,
-        Comment       => 'Required to connect to a MySQL database.',
+        Module    => 'DBD::mysql',
+        Required  => 0,
+        Comment   => 'Required to connect to a MySQL database.',
         InstTypes => {
             aptget => 'libdbi-mysql-perl',
             ppm    => 'DBD-mysql',
@@ -193,60 +199,60 @@ my @NeededModules = (
                     'This version is broken and not useable! Please upgrade to a higher version.',
             },
         ],
-        Comment       => 'Required to connect to a MS-SQL database.',
+        Comment   => 'Required to connect to a MS-SQL database.',
         InstTypes => {
             aptget => 'libdb-odbc-perl',
             ppm    => 'DBD-ODBC',
         },
     },
     {
-        Module        => 'DBD::Oracle',
-        Required      => 0,
-        Comment       => 'Required to connect to a Oracle database.',
+        Module    => 'DBD::Oracle',
+        Required  => 0,
+        Comment   => 'Required to connect to a Oracle database.',
         InstTypes => {
-            ppm    => 'DBD-Oracle',
+            ppm => 'DBD-Oracle',
         },
     },
     {
-        Module        => 'DBD::Pg',
-        Required      => 0,
-        Comment       => 'Required to connect to a PostgreSQL database.',
+        Module    => 'DBD::Pg',
+        Required  => 0,
+        Comment   => 'Required to connect to a PostgreSQL database.',
         InstTypes => {
             aptget => 'libdb-pg-perl',
             ppm    => 'DBD-Pg',
         },
     },
     {
-        Module        => 'Encode::HanExtra',
-        Version       => '0.23',
-        Required      => 0,
-        Comment       => 'Required to handle mails with several Chinese character sets.',
+        Module    => 'Encode::HanExtra',
+        Version   => '0.23',
+        Required  => 0,
+        Comment   => 'Required to handle mails with several Chinese character sets.',
         InstTypes => {
             aptget => 'libencode-hanextra-perl',
         },
     },
     {
-        Module        => 'GD',
-        Required      => 0,
-        Comment       => 'Required for stats.',
+        Module    => 'GD',
+        Required  => 0,
+        Comment   => 'Required for stats.',
         InstTypes => {
             aptget => 'libgd-gd2-perl',
             ppm    => 'GD',
         },
         Depends => [
             {
-                Module        => 'GD::Text',
-                Required      => 0,
-                Comment       => 'Required for stats.',
+                Module    => 'GD::Text',
+                Required  => 0,
+                Comment   => 'Required for stats.',
                 InstTypes => {
                     aptget => 'libgd-text-perl',
                     ppm    => 'GDTextUtil',
-                }
+                    }
             },
             {
-                Module        => 'GD::Graph',
-                Required      => 0,
-                Comment       => 'Required for stats.',
+                Module    => 'GD::Graph',
+                Required  => 0,
+                Comment   => 'Required for stats.',
                 InstTypes => {
                     aptget => 'libgd-graph-perl',
                     ppm    => 'GDGraph',
@@ -255,45 +261,45 @@ my @NeededModules = (
         ],
     },
     {
-        Module        => 'IO::Socket::SSL',
-        Required      => 0,
-        Comment       => 'Required for SSL connections to web and mail servers.',
+        Module    => 'IO::Socket::SSL',
+        Required  => 0,
+        Comment   => 'Required for SSL connections to web and mail servers.',
         InstTypes => {
             aptget => 'libio-socket-ssl-perl',
             ppm    => 'IO-Socket-SSL',
         },
     },
     {
-        Module        => 'JSON::XS',
-        Required      => 0,
-        Comment       => 'Recommended for faster AJAX/JavaScript handling.',
+        Module    => 'JSON::XS',
+        Required  => 0,
+        Comment   => 'Recommended for faster AJAX/JavaScript handling.',
         InstTypes => {
             aptget => 'libjson-xs-perl',
             ppm    => 'JSON-XS',
         },
     },
     {
-        Module        => 'LWP::UserAgent',
-        Required      => 1,
+        Module    => 'LWP::UserAgent',
+        Required  => 1,
         InstTypes => {
             aptget => 'libwww-perl',
             ppm    => 'libwww-perl',
         },
     },
     {
-        Module        => 'Mail::IMAPClient',
-        Version       => '3.22',
-        Comment       => 'Required for IMAP TLS connections.',
-        Required      => 0,
+        Module    => 'Mail::IMAPClient',
+        Version   => '3.22',
+        Comment   => 'Required for IMAP TLS connections.',
+        Required  => 0,
         InstTypes => {
             aptget => 'libmail-imapclient-perl',
             ppm    => 'Mail-IMAPClient',
         },
         Depends => [
             {
-                Module        => 'IO::Socket::SSL',
-                Required      => 0,
-                Comment       => 'Required for IMAP TLS connections.',
+                Module    => 'IO::Socket::SSL',
+                Required  => 0,
+                Comment   => 'Required for IMAP TLS connections.',
                 InstTypes => {
                     aptget => 'libio-socket-ssl-perl',
                     ppm    => 'IO-Socket-SSL',
@@ -302,9 +308,9 @@ my @NeededModules = (
         ],
     },
     {
-        Module        => 'ModPerl::Util',
-        Required      => 0,
-        Comment       => 'Improves Performance on Apache webservers dramatically.',
+        Module    => 'ModPerl::Util',
+        Required  => 0,
+        Comment   => 'Improves Performance on Apache webservers dramatically.',
         InstTypes => {
             aptget => 'libapache2-mod-perl2',
         },
@@ -325,18 +331,18 @@ my @NeededModules = (
         },
     },
     {
-        Module        => 'Net::LDAP',
-        Required      => 0,
-        Comment       => 'Required for directory authentication.',
+        Module    => 'Net::LDAP',
+        Required  => 0,
+        Comment   => 'Required for directory authentication.',
         InstTypes => {
             aptget => 'libnet-ldap-perl',
             ppm    => 'Net-LDAP',
         },
     },
     {
-        Module        => 'Net::SSL',
-        Required      => 0,
-        Comment       => 'Required for Generic Interface SOAP SSL connections.',
+        Module    => 'Net::SSL',
+        Required  => 0,
+        Comment   => 'Required for Generic Interface SOAP SSL connections.',
         InstTypes => {
             aptget => 'libcrypt-ssleay-perl',
             ppm    => 'Crypt-SSLeay',
@@ -375,36 +381,36 @@ my @NeededModules = (
         },
     },
     {
-        Module        => 'Text::CSV_XS',
-        Required      => 0,
-        Comment       => 'Recommended for faster CSV handling.',
+        Module    => 'Text::CSV_XS',
+        Required  => 0,
+        Comment   => 'Recommended for faster CSV handling.',
         InstTypes => {
             aptget => 'libtext-csv-xs-perl',
             ppm    => 'Text-CSV_XS',
         },
     },
     {
-        Module        => 'Time::HiRes',
-        Required      => 1,
-        Comment       => 'Required for high resolution timestamps.',
+        Module    => 'Time::HiRes',
+        Required  => 1,
+        Comment   => 'Required for high resolution timestamps.',
         InstTypes => {
             aptget => 'perl',
             ppm    => 'Time-HiRes',
         },
     },
     {
-        Module        => 'XML::Parser',
-        Required      => 0,
-        Comment       => 'Recommended for faster xml handling.',
+        Module    => 'XML::Parser',
+        Required  => 0,
+        Comment   => 'Recommended for faster xml handling.',
         InstTypes => {
             aptget => 'libxml-parser-perl',
             ppm    => 'XML-Parser',
         },
     },
     {
-        Module        => 'YAML::XS',
-        Required      => 1,
-        Comment       => 'Very important',
+        Module    => 'YAML::XS',
+        Required  => 1,
+        Comment   => 'Very important',
         InstTypes => {
             aptget => 'libyaml-libyaml-perl',
             ppm    => 'YAML-XS',
@@ -417,17 +423,17 @@ if ( $^O eq 'MSWin32' ) {
 
     my @WindowsModules = (
         {
-            Module        => 'Win32::Daemon',
-            Required      => 1,
-            Comment       => 'For running the OTRS Scheduler Service.',
+            Module    => 'Win32::Daemon',
+            Required  => 1,
+            Comment   => 'For running the OTRS Scheduler Service.',
             InstTypes => {
                 ppm => 'Win32-Daemon',
             },
         },
         {
-            Module        => 'Win32::Service',
-            Required      => 1,
-            Comment       => 'For running the OTRS Scheduler Service.',
+            Module    => 'Win32::Service',
+            Required  => 1,
+            Comment   => 'For running the OTRS Scheduler Service.',
             InstTypes => {
                 ppm => 'Win32-Service',
             },
@@ -539,9 +545,9 @@ sub _Check {
         }
     }
     else {
-        my $Comment     = $Module->{Comment} ? ' - ' . $Module->{Comment} : '';
-        my $Required    = $Module->{Required};
-        my $Color       = 'yellow';
+        my $Comment  = $Module->{Comment} ? ' - ' . $Module->{Comment} : '';
+        my $Required = $Module->{Required};
+        my $Color    = 'yellow';
 
         # OS Install Command
         my $Install;
@@ -551,27 +557,29 @@ sub _Check {
         my $InstType = $DistToInstType{$OSDist};
 
         if ($InstType) {
+
             # gets the install command for installation type
             # e.g. ppm install %s
             # default is the cpan install command
             # e.g. cpan %s
-            $Install = $InstTypeToCMD{ $InstType }->{CMD};
+            $Install = $InstTypeToCMD{$InstType}->{CMD};
+
             # gets the target package
             # default is the cpan module name
-            if ( $InstTypeToCMD{ $InstType }->{UseModule} ) {
+            if ( $InstTypeToCMD{$InstType}->{UseModule} ) {
                 $PackageName = $Module->{Module};
             }
             else {
-                $PackageName = $Module->{InstTypes}->{ $InstType };
+                $PackageName = $Module->{InstTypes}->{$InstType};
             }
         }
-        if (!$Install || !$PackageName) {
+        if ( !$Install || !$PackageName ) {
             $Install     = $InstTypeToCMD{default}->{CMD};
             $PackageName = $Module->{Module};
         }
 
         # create example installation string for module
-        $Install = "Use: '" . sprintf ($Install, $PackageName) . "'";
+        $Install = "Use: '" . sprintf( $Install, $PackageName ) . "'";
 
         if ($Required) {
             $Required = 'required';
@@ -584,7 +592,10 @@ sub _Check {
             print "Not installed! ($Required $Comment)\n";
         }
         else {
-            print color($Color) . 'Not installed!' . color('reset') . " $Install ($Required$Comment)\n";
+            print color($Color)
+                . 'Not installed!'
+                . color('reset')
+                . " $Install ($Required$Comment)\n";
         }
     }
 
@@ -617,10 +628,13 @@ sub _VersionClean {
 }
 
 sub _CheckActiveStatePerl {
-    # checks if active state perl on windows is activated
-    my $as = eval 'use Win32; return Win32::BuildNumber();';
 
-    return $as ? 1 : 0;
+    # checks if active state perl on windows is activated
+    ## no critic
+    my $ActiveStatePerl = eval 'use Win32; return Win32::BuildNumber();';
+    ## use critic
+
+    return $ActiveStatePerl ? 1 : 0;
 }
 
 exit 0;
