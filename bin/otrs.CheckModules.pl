@@ -77,13 +77,13 @@ our $EnvironmentObject = Kernel::System::Environment->new(
     DBObject     => $DBObject,
 );
 
-our %OSInst = (
-    aptget  => 'apt-get install -y ##Name##',
-    ppm     => 'ppm install ##Name##',
-    gcpan   => 'g-cpan -i ##Name##',
-    yum     => 'yum install "perl(##Name##)',
-    zypper  => 'zypper install "perl(##Name##)"',
-    default => 'cpan ##Name##',
+our %InstTypeToCMD = (
+    aptget  => 'apt-get install -y %s',
+    ppm     => 'ppm install %s',
+    gcpan   => 'g-cpan -i %s',
+    yum     => 'yum install "perl(%s)',
+    zypper  => 'zypper install "perl(%s)"',
+    default => 'cpan %s',
 );
 #gentoo, solaris, oracle
 our %DistToInstType = (
@@ -106,7 +106,7 @@ my %OSData  = $EnvironmentObject->OSInfoGet();
 our $OSDist = $OSData{Distribution};
 # set win32as if active state perl is installed on windows.
 # for windows installations without active state perl we use the default.
-if ($OSData{OS} eq 'windows' && $ENV{'GATEWAY_INTERFACE'} && $ENV{'GATEWAY_INTERFACE'} eq "CGI-PerlEx") {
+if (_CheckActiveStatePerl()) {
     $OSDist = 'win32as';
 }
 
@@ -524,15 +524,26 @@ sub _Check {
         my $Comment     = $Module->{Comment} ? ' - ' . $Module->{Comment} : '';
         my $Required    = $Module->{Required};
         my $Color       = 'yellow';
+
         # OS Install Command
-        my $Install     = $OSInst{ $DistToInstType{$OSDist} };
-        my $PackageName = $Module->{InstTypes}->{ $DistToInstType{$OSDist} };
-        if (!$Install && !$PackageName) {
-            $Install     = $OSInst{default};
-            $PackageName = $Module->{Module};
+        my $Install;
+        my $PackageName;
+
+        # returns the installation type e.g. ppm
+        my $InstType = $DistToInstType{$OSDist};
+
+        if ($InstType) {
+            # gets the install command for installation type
+            # e.g. ppm install %s
+            # default is the cpan install command
+            # e.g. cpan %s
+            $Install     = $InstTypeToCMD{ $InstType }         || $InstTypeToCMD{default};
+            # gets the target package
+            # default is the cpan module name
+            $PackageName = $Module->{InstTypes}->{ $InstType } || $Module->{Module};
         }
-        $Install =~ s{\#\#Name\#\#}{$PackageName}xms;
-        $Install = "Use: '" . $Install . "'";
+        # create example installation string for module
+        $Install = "Use: '" . sprintf ($Install, $PackageName) . "'";
 
         if ($Required) {
             $Required = 'required';
@@ -575,6 +586,13 @@ sub _VersionClean {
     }
 
     return int $CleanedVersion;
+}
+
+sub _CheckActiveStatePerl {
+    # checks if active state perl on windows is activated
+    my $as = eval 'use Win32; return Win32::BuildNumber();';
+
+    return $as ? 1 : 0;
 }
 
 exit 0;
