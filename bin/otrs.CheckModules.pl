@@ -58,27 +58,47 @@ if ( $ENV{nocolors} || $Options =~ m{\A nocolors}msxi ) {
 # config
 my @NeededModules = (
     {
-        Module   => 'Crypt::Eksblowfish::Bcrypt',
-        Required => 0,
-        Comment  => 'For strong password hashing.',
+        Module        => 'Crypt::Eksblowfish::Bcrypt',
+        Required      => 0,
+        Comment       => 'For strong password hashing.',
+        Distributions => {
+            debian  => 'libcrypt-eksblowfish-perl',
+            win32as => 'Crypt-Eksblowfish',
+            }
     },
     {
-        Module   => 'Crypt::SSLeay',
-        Required => 0,
-        Comment  => 'Required for Generic Interface SOAP SSL connections.',
+        Module        => 'Crypt::SSLeay',
+        Required      => 0,
+        Comment       => 'Required for Generic Interface SOAP SSL connections.',
+        Distributions => {
+            debian  => 'libcrypt-ssleay-perl',
+            win32as => 'Crypt-SSLeay',
+            }
     },
     {
-        Module   => 'Date::Format',
-        Required => 1,
+        Module        => 'Date::Format',
+        Required      => 1,
+        Distributions => {
+            debian  => 'libtimedate-perl',
+            win32as => 'TimeDate',
+            }
     },
     {
-        Module   => 'DBI',
-        Required => 1,
+        Module        => 'DBI',
+        Required      => 1,
+        Distributions => {
+            debian  => 'libdbi-perl',
+            win32as => 'DBI',
+            }
     },
     {
-        Module   => 'DBD::mysql',
-        Required => 0,
-        Comment  => 'Required to connect to a MySQL database.',
+        Module        => 'DBD::mysql',
+        Required      => 0,
+        Comment       => 'Required to connect to a MySQL database.',
+        Distributions => {
+            debian  => 'libdbi-mysql-perl',
+            win32as => 'DBD-mysql',
+            }
     },
     {
         Module       => 'DBD::ODBC',
@@ -90,72 +110,121 @@ my @NeededModules = (
                     'This version is broken and not useable! Please upgrade to a higher version.',
             },
         ],
-        Comment => 'Required to connect to a MS-SQL database.',
+        Comment       => 'Required to connect to a MS-SQL database.',
+        Distributions => {
+            debian  => 'libdb-odbc-perl',
+            win32as => 'DBD-ODBC',
+            }
     },
     {
-        Module   => 'DBD::Oracle',
-        Required => 0,
-        Comment  => 'Required to connect to a Oracle database.',
+        Module        => 'DBD::Oracle',
+        Required      => 0,
+        Comment       => 'Required to connect to a Oracle database.',
+        Distributions => {
+            win32as => 'DBD-Oracle',
+            }
     },
     {
-        Module   => 'DBD::Pg',
-        Required => 0,
-        Comment  => 'Required to connect to a PostgreSQL database.',
+        Module        => 'DBD::Pg',
+        Required      => 0,
+        Comment       => 'Required to connect to a PostgreSQL database.',
+        Distributions => {
+            debian  => 'libdb-pg-perl',
+            win32as => 'DBD-Pg',
+            }
     },
     {
-        Module   => 'Encode::HanExtra',
-        Version  => '0.23',
-        Required => 0,
-        Comment  => 'Required to handle mails with several Chinese character sets.',
+        Module        => 'Encode::HanExtra',
+        Version       => '0.23',
+        Required      => 0,
+        Comment       => 'Required to handle mails with several Chinese character sets.',
+        Distributions => {
+            debian => 'libencode-hanextra-perl',
+            }
     },
     {
-        Module   => 'GD',
-        Required => 0,
-        Comment  => 'Required for stats.',
-        Depends  => [
+        Module        => 'GD',
+        Required      => 0,
+        Comment       => 'Required for stats.',
+        Distributions => {
+            debian  => 'libgd-gd2-perl',
+            win32as => 'GD',
+        },
+        Depends => [
             {
-                Module   => 'GD::Text',
-                Required => 0,
-                Comment  => 'Required for stats.',
+                Module        => 'GD::Text',
+                Required      => 0,
+                Comment       => 'Required for stats.',
+                Distributions => {
+                    debian  => 'libgd-text-perl',
+                    win32as => 'GDTextUtil',
+                    }
             },
             {
-                Module   => 'GD::Graph',
-                Required => 0,
-                Comment  => 'Required for stats.',
+                Module        => 'GD::Graph',
+                Required      => 0,
+                Comment       => 'Required for stats.',
+                Distributions => {
+                    debian  => 'libgd-graph-perl',
+                    win32as => 'GDGraph',
+                    }
             },
         ],
     },
     {
-        Module   => 'IO::Socket::SSL',
-        Required => 0,
-        Comment  => 'Required for SSL connections to web and mail servers.',
+        Module        => 'IO::Socket::SSL',
+        Required      => 0,
+        Comment       => 'Required for SSL connections to web and mail servers.',
+        Distributions => {
+            debian  => 'libio-socket-ssl-perl',
+            win32as => 'IO-Socket-SSL',
+            }
     },
     {
-        Module   => 'JSON::XS',
-        Required => 0,
-        Comment  => 'Recommended for faster AJAX/JavaScript handling.',
+        Module        => 'JSON::XS',
+        Required      => 0,
+        Comment       => 'Recommended for faster AJAX/JavaScript handling.',
+        Distributions => {
+            debian  => 'libjson-xs-perl',
+            win32as => 'JSON-XS',
+            }
     },
     {
-        Module   => 'LWP::UserAgent',
-        Required => 1,
+        Module        => 'LWP::UserAgent',
+        Required      => 1,
+        Distributions => {
+            debian  => 'libwww-perl',
+            win32as => 'libwww-perl',
+            }
     },
     {
-        Module   => 'Mail::IMAPClient',
-        Version  => '3.22',
-        Comment  => 'Required for IMAP TLS connections.',
-        Required => 0,
-        Depends  => [
+        Module        => 'Mail::IMAPClient',
+        Version       => '3.22',
+        Comment       => 'Required for IMAP TLS connections.',
+        Required      => 0,
+        Distributions => {
+            debian  => 'libmail-imapclient-perl',
+            win32as => 'Mail-IMAPClient',
+        },
+        Depends => [
             {
-                Module   => 'IO::Socket::SSL',
-                Required => 0,
-                Comment  => 'Required for IMAP TLS connections.',
+                Module        => 'IO::Socket::SSL',
+                Required      => 0,
+                Comment       => 'Required for IMAP TLS connections.',
+                Distributions => {
+                    debian  => 'libio-socket-ssl-perl',
+                    win32as => 'IO-Socket-SSL',
+                    }
             },
         ],
     },
     {
-        Module   => 'ModPerl::Util',
-        Required => 0,
-        Comment  => 'Improves Performance on Apache webservers dramatically.',
+        Module        => 'ModPerl::Util',
+        Required      => 0,
+        Comment       => 'Improves Performance on Apache webservers dramatically.',
+        Distributions => {
+            debian => 'libapache2-mod-perl2',
+            }
     },
     {
         Module       => 'Net::DNS',
@@ -167,16 +236,28 @@ my @NeededModules = (
                     'This version is broken and not useable! Please upgrade to a higher version.',
             },
         ],
+        Distributions => {
+            debian  => 'libnet-dns-perl',
+            win32as => 'Net-DNS',
+            }
     },
     {
-        Module   => 'Net::LDAP',
-        Required => 0,
-        Comment  => 'Required for directory authentication.',
+        Module        => 'Net::LDAP',
+        Required      => 0,
+        Comment       => 'Required for directory authentication.',
+        Distributions => {
+            debian  => 'libnet-ldap-perl',
+            win32as => 'Net-LDAP',
+            }
     },
     {
-        Module   => 'Net::SSL',
-        Required => 0,
-        Comment  => 'Required for Generic Interface SOAP SSL connections.',
+        Module        => 'Net::SSL',
+        Required      => 0,
+        Comment       => 'Required for Generic Interface SOAP SSL connections.',
+        Distributions => {
+            debian  => 'libcrypt-ssleay-perl',
+            win32as => 'Crypt-SSLeay',
+            }
     },
     {
         Module       => 'PDF::API2',
@@ -205,32 +286,46 @@ my @NeededModules = (
                     'This version is broken and not useable! Please upgrade to a higher version.',
             },
         ],
-        Depends => [
-            {
-                Module   => 'Compress::Zlib',
-                Required => 0,
-                Comment  => 'Required for PDF output.',
-            },
-        ],
+        Distributions => {
+            debian  => 'libpdf-api2-perl',
+            win32as => 'PDF-API2',
+            }
     },
     {
-        Module   => 'Text::CSV_XS',
-        Required => 0,
-        Comment  => 'Recommended for faster CSV handling.',
+        Module        => 'Text::CSV_XS',
+        Required      => 0,
+        Comment       => 'Recommended for faster CSV handling.',
+        Distributions => {
+            debian  => 'libtext-csv-xs-perl',
+            win32as => 'Text-CSV_XS',
+            }
     },
     {
-        Module   => 'Time::HiRes',
-        Required => 1,
-        Comment  => 'Required for high resolution timestamps.',
+        Module        => 'Time::HiRes',
+        Required      => 1,
+        Comment       => 'Required for high resolution timestamps.',
+        Distributions => {
+            debian  => 'perl',
+            win32as => 'Time-HiRes',
+            }
     },
     {
-        Module   => 'XML::Parser',
-        Required => 0,
-        Comment  => 'Recommended for faster xml handling.',
+        Module        => 'XML::Parser',
+        Required      => 0,
+        Comment       => 'Recommended for faster xml handling.',
+        Distributions => {
+            debian  => 'libxml-parser-perl',
+            win32as => 'XML-Parser',
+            }
     },
     {
-        Module   => 'YAML::XS',
-        Required => 1,
+        Module        => 'YAML::XS',
+        Required      => 1,
+        Comment       => 'Very important',
+        Distributions => {
+            debian  => 'libyaml-libyaml-perl',
+            win32as => 'YAML-XS',
+            }
     },
 );
 
@@ -355,21 +450,21 @@ sub _Check {
         }
     }
     else {
-        my $Comment  = $Module->{Comment} || '';
+        my $Comment  = $Module->{Comment} ? ' - ' . $Module->{Comment} : '';
         my $Required = $Module->{Required};
         my $Color    = 'yellow';
         if ($Required) {
-            $Required = 'required - please install this module';
+            $Required = 'required';
             $Color    = 'red';
         }
         else {
             $Required = 'optional';
         }
         if ($NoColors) {
-            print "Not installed! ($Required - $Comment)\n";
+            print "Not installed! ($Required $Comment)\n";
         }
         else {
-            print color($Color) . 'Not installed!' . color('reset') . " ($Required - $Comment)\n";
+            print color($Color) . 'Not installed!' . color('reset') . " ($Required$Comment)\n";
         }
     }
 
