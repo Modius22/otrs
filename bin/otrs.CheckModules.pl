@@ -78,12 +78,30 @@ our $EnvironmentObject = Kernel::System::Environment->new(
 );
 
 our %InstTypeToCMD = (
-    aptget  => 'apt-get install -y %s',
-    ppm     => 'ppm install %s',
-    gcpan   => 'g-cpan -i %s',
-    yum     => 'yum install "perl(%s)',
-    zypper  => 'zypper install "perl(%s)"',
-    default => 'cpan %s',
+    aptget  => {
+        CMD       => 'apt-get install -y %s',
+        UseModule => 0,
+    },
+    ppm     => {
+        CMD       => 'ppm install %s',
+        UseModule => 0,
+    },
+    gcpan   => {
+        CMD       => 'g-cpan -i %s',
+        UseModule => 1,
+    },
+    yum     => {
+        CMD       => 'yum install "perl(%s)',
+        UseModule => 1,
+    },
+    zypper  => {
+        CMD       => 'zypper install "perl(%s)"',
+        UseModule => 1,
+    },
+    default => {
+        CMD       => 'cpan %s',
+        UseModule => 1,
+    },
 );
 #gentoo, solaris, oracle
 our %DistToInstType = (
@@ -128,10 +146,7 @@ my @NeededModules = (
         Comment       => 'For strong password hashing.',
         InstTypes => {
             aptget => 'libcrypt-eksblowfish-perl',
-            gcpan  => 'Crypt::Eksblowfish::Bcrypt',
             ppm    => 'Crypt-Eksblowfish',
-            yum    => 'Crypt::Eksblowfish::Bcrypt',
-            zypper => 'Crypt::Eksblowfish::Bcrypt',
         },
     },
     {
@@ -140,10 +155,7 @@ my @NeededModules = (
         Comment       => 'Required for Generic Interface SOAP SSL connections.',
         InstTypes => {
             aptget => 'libcrypt-ssleay-perl',
-            gcpan  => 'Crypt::SSLeay',
             ppm    => 'Crypt-SSLeay',
-            yum    => 'Crypt::SSLeay',
-            zypper => 'Crypt::SSLeay',
         },
     },
     {
@@ -151,10 +163,7 @@ my @NeededModules = (
         Required      => 1,
         InstTypes => {
             aptget => 'libtimedate-perl',
-            gcpan  => 'Date::Format',
             ppm    => 'TimeDate',
-            yum    => 'Date::Format',
-            zypper => 'Date::Format',
         },
     },
     {
@@ -162,10 +171,7 @@ my @NeededModules = (
         Required      => 1,
         InstTypes => {
             aptget => 'libdbi-perl',
-            gcpan  => 'DBI',
             ppm    => 'DBI',
-            yum    => 'DBI',
-            zypper => 'DBI',
         },
     },
     {
@@ -174,10 +180,7 @@ my @NeededModules = (
         Comment       => 'Required to connect to a MySQL database.',
         InstTypes => {
             aptget => 'libdbi-mysql-perl',
-            gcpan  => 'DBD::mysql',
             ppm    => 'DBD-mysql',
-            yum    => 'DBD::mysql',
-            zypper => 'DBD::mysql',
         },
     },
     {
@@ -193,10 +196,7 @@ my @NeededModules = (
         Comment       => 'Required to connect to a MS-SQL database.',
         InstTypes => {
             aptget => 'libdb-odbc-perl',
-            gcpan  => 'DBD::ODBC',
             ppm    => 'DBD-ODBC',
-            yum    => 'DBD::ODBC',
-            zypper => 'DBD::ODBC',
         },
     },
     {
@@ -204,10 +204,7 @@ my @NeededModules = (
         Required      => 0,
         Comment       => 'Required to connect to a Oracle database.',
         InstTypes => {
-            gcpan  => 'DBD::Oracle',
             ppm    => 'DBD-Oracle',
-            yum    => 'DBD::Oracle',
-            zypper => 'DBD::Oracle',
         },
     },
     {
@@ -216,10 +213,7 @@ my @NeededModules = (
         Comment       => 'Required to connect to a PostgreSQL database.',
         InstTypes => {
             aptget => 'libdb-pg-perl',
-            gcpan  => 'DBD::Pg',
             ppm    => 'DBD-Pg',
-            yum    => 'DBD::Pg',
-            zypper => 'DBD::Pg',
         },
     },
     {
@@ -229,9 +223,6 @@ my @NeededModules = (
         Comment       => 'Required to handle mails with several Chinese character sets.',
         InstTypes => {
             aptget => 'libencode-hanextra-perl',
-            gcpan  => 'Encode::HanExtra',
-            yum    => 'Encode::HanExtra',
-            zypper => 'Encode::HanExtra',
         },
     },
     {
@@ -240,10 +231,7 @@ my @NeededModules = (
         Comment       => 'Required for stats.',
         InstTypes => {
             aptget => 'libgd-gd2-perl',
-            gcpan  => 'GD',
             ppm    => 'GD',
-            yum    => 'GD',
-            zypper => 'GD',
         },
         Depends => [
             {
@@ -252,10 +240,7 @@ my @NeededModules = (
                 Comment       => 'Required for stats.',
                 InstTypes => {
                     aptget => 'libgd-text-perl',
-                    gcpan  => 'GD::Text',
                     ppm    => 'GDTextUtil',
-                    yum    => 'GD::Text',
-                    zypper => 'GD::Text',
                 }
             },
             {
@@ -264,10 +249,7 @@ my @NeededModules = (
                 Comment       => 'Required for stats.',
                 InstTypes => {
                     aptget => 'libgd-graph-perl',
-                    gcpan  => 'GD::Graph',
                     ppm    => 'GDGraph',
-                    yum    => 'GD::Graph',
-                    zypper => 'GD::Graph',
                 },
             },
         ],
@@ -278,10 +260,7 @@ my @NeededModules = (
         Comment       => 'Required for SSL connections to web and mail servers.',
         InstTypes => {
             aptget => 'libio-socket-ssl-perl',
-            gcpan  => 'IO::Socket::SSL',
             ppm    => 'IO-Socket-SSL',
-            yum    => 'IO::Socket::SSL',
-            zypper => 'IO::Socket::SSL',
         },
     },
     {
@@ -290,10 +269,7 @@ my @NeededModules = (
         Comment       => 'Recommended for faster AJAX/JavaScript handling.',
         InstTypes => {
             aptget => 'libjson-xs-perl',
-            gcpan  => 'JSON::XS',
             ppm    => 'JSON-XS',
-            yum    => 'JSON::XS',
-            zypper => 'JSON::XS',
         },
     },
     {
@@ -301,10 +277,7 @@ my @NeededModules = (
         Required      => 1,
         InstTypes => {
             aptget => 'libwww-perl',
-            gcpan  => 'LWP::UserAgent',
             ppm    => 'libwww-perl',
-            yum    => 'LWP::UserAgent',
-            zypper => 'LWP::UserAgent',
         },
     },
     {
@@ -314,10 +287,7 @@ my @NeededModules = (
         Required      => 0,
         InstTypes => {
             aptget => 'libmail-imapclient-perl',
-            gcpan  => 'Mail::IMAPClient',
             ppm    => 'Mail-IMAPClient',
-            yum    => 'Mail::IMAPClient',
-            zypper => 'Mail::IMAPClient',
         },
         Depends => [
             {
@@ -326,10 +296,7 @@ my @NeededModules = (
                 Comment       => 'Required for IMAP TLS connections.',
                 InstTypes => {
                     aptget => 'libio-socket-ssl-perl',
-                    gcpan  => 'IO::Socket::SSL',
                     ppm    => 'IO-Socket-SSL',
-                    yum    => 'IO::Socket::SSL',
-                    zypper => 'IO::Socket::SSL',
                 },
             },
         ],
@@ -340,10 +307,7 @@ my @NeededModules = (
         Comment       => 'Improves Performance on Apache webservers dramatically.',
         InstTypes => {
             aptget => 'libapache2-mod-perl2',
-            gcpan  => 'ModPerl::Util',
         },
-            yum    => 'ModPerl::Util',
-            zypper => 'ModPerl::Util',
     },
     {
         Module       => 'Net::DNS',
@@ -357,10 +321,7 @@ my @NeededModules = (
         ],
         InstTypes => {
             aptget => 'libnet-dns-perl',
-            gcpan  => 'Net::DNS',
             ppm    => 'Net-DNS',
-            yum    => 'Net::DNS',
-            zypper => 'Net::DNS',
         },
     },
     {
@@ -369,10 +330,7 @@ my @NeededModules = (
         Comment       => 'Required for directory authentication.',
         InstTypes => {
             aptget => 'libnet-ldap-perl',
-            gcpan  => 'Net::LDAP',
             ppm    => 'Net-LDAP',
-            yum    => 'Net::LDAP',
-            zypper => 'Net::LDAP',
         },
     },
     {
@@ -381,10 +339,7 @@ my @NeededModules = (
         Comment       => 'Required for Generic Interface SOAP SSL connections.',
         InstTypes => {
             aptget => 'libcrypt-ssleay-perl',
-            gcpan  => 'Net::SSL',
             ppm    => 'Crypt-SSLeay',
-            yum    => 'Net::SSL',
-            zypper => 'Net::SSL',
         },
     },
     {
@@ -416,10 +371,7 @@ my @NeededModules = (
         ],
         InstTypes => {
             aptget => 'libpdf-api2-perl',
-            gcpan  => 'PDF::API2',
             ppm    => 'PDF-API2',
-            yum    => 'PDF::API2',
-            zypper => 'PDF::API2',
         },
     },
     {
@@ -428,10 +380,7 @@ my @NeededModules = (
         Comment       => 'Recommended for faster CSV handling.',
         InstTypes => {
             aptget => 'libtext-csv-xs-perl',
-            gcpan  => 'Text::CSV_XS',
             ppm    => 'Text-CSV_XS',
-            yum    => 'Text::CSV_XS',
-            zypper => 'Text::CSV_XS',
         },
     },
     {
@@ -440,10 +389,7 @@ my @NeededModules = (
         Comment       => 'Required for high resolution timestamps.',
         InstTypes => {
             aptget => 'perl',
-            gcpan  => 'Time::HiRes',
             ppm    => 'Time-HiRes',
-            yum    => 'Time::HiRes',
-            zypper => 'Time::HiRes',
         },
     },
     {
@@ -452,10 +398,7 @@ my @NeededModules = (
         Comment       => 'Recommended for faster xml handling.',
         InstTypes => {
             aptget => 'libxml-parser-perl',
-            gcpan  => 'XML::Parser',
             ppm    => 'XML-Parser',
-            yum    => 'XML::Parser',
-            zypper => 'XML::Parser',
         },
     },
     {
@@ -464,10 +407,7 @@ my @NeededModules = (
         Comment       => 'Very important',
         InstTypes => {
             aptget => 'libyaml-libyaml-perl',
-            gcpan  => 'YAML::XS',
             ppm    => 'YAML-XS',
-            yum    => 'YAML::XS',
-            zypper => 'YAML::XS',
         },
     },
 );
@@ -615,13 +555,18 @@ sub _Check {
             # e.g. ppm install %s
             # default is the cpan install command
             # e.g. cpan %s
-            $Install = $InstTypeToCMD{ $InstType };
+            $Install = $InstTypeToCMD{ $InstType }->{CMD};
             # gets the target package
             # default is the cpan module name
-            $PackageName = $Module->{InstTypes}->{ $InstType };
+            if ( $InstTypeToCMD{ $InstType }->{UseModule} ) {
+                $PackageName = $Module->{Module};
+            }
+            else {
+                $PackageName = $Module->{InstTypes}->{ $InstType };
+            }
         }
         if (!$Install || !$PackageName) {
-            $Install = $InstTypeToCMD{default};
+            $Install     = $InstTypeToCMD{default}->{CMD};
             $PackageName = $Module->{Module};
         }
 
