@@ -45,9 +45,6 @@ use File::Path;
 use Getopt::Long;
 use Term::ANSIColor;
 
-use Kernel::System::Log;
-use Kernel::System::Main;
-use Kernel::System::DB;
 use Kernel::System::Environment;
 
 use Kernel::System::VariableCheck qw(:all);
