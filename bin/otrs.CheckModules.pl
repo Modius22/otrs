@@ -65,18 +65,11 @@ my $MainObject = Kernel::System::Main->new(
     EncodeObject => $EncodeObject,
     LogObject    => $LogObject,
 );
-my $DBObject = Kernel::System::DB->new(
-    ConfigObject => $ConfigObject,
-    EncodeObject => $EncodeObject,
-    LogObject    => $LogObject,
-    MainObject   => $MainObject,
-);
 our $EnvironmentObject = Kernel::System::Environment->new(
     EncodeObject => $EncodeObject,
     ConfigObject => $ConfigObject,
     LogObject    => $LogObject,
     MainObject   => $MainObject,
-    DBObject     => $DBObject,
 );
 
 our %InstTypeToCMD = (
@@ -105,11 +98,13 @@ our %InstTypeToCMD = (
         UseModule => 1,
     },
     yum => {
-        CMD       => 'yum install "perl(%s)"',
+        CMD       => 'yum install "%s"',
+        SubCMD    => 'perl(%s)',
         UseModule => 1,
     },
     zypper => {
-        CMD       => 'zypper install "perl(%s)"',
+        CMD       => 'zypper install "%s"',
+        SubCMD    => 'perl(%s)',
         UseModule => 1,
     },
     default => {
@@ -467,7 +462,11 @@ if ($PackageList) {
     my %PackageList = _PackageList(\@NeededModules);
 
     if ( IsArrayRefWithData( $PackageList{Packages} ) ) {
-        printf join(' ', @{ $PackageList{Packages} } ) . "\n";
+
+        my $CMD = $PackageList{CMD};
+
+        printf $CMD, join(' ', map { ($PackageList{SubCMD}) ? sprintf $PackageList{SubCMD}, $_ : $_  } @{ $PackageList{Packages} } );
+        print "\n";
     }
 }
 else {
@@ -581,9 +580,14 @@ sub _Check {
         my %InstallCommand = _GetInstallCommand($Module);
 
         # create example installation string for module
-        my $InstallText;
+        my $InstallText = '';
         if ( IsHashRefWithData(\%InstallCommand) ) {
-            $InstallText = " Use: '" . sprintf( $InstallCommand{CMD}, $InstallCommand{Package} ) . "'";
+            my $CMD = $InstallCommand{CMD};
+            if ( $InstallCommand{SubCMD} ) {
+                $CMD = sprintf $InstallCommand{CMD}, $InstallCommand{SubCMD};
+            }
+
+            $InstallText = " Use: '" . sprintf( $CMD, $InstallCommand{Package} ) . "'";
         }
 
         if ($Required) {
@@ -617,6 +621,7 @@ sub _PackageList {
     my ( $PackageList ) = @_;
 
     my $CMD;
+    my $SubCMD;
     my @Packages;
 
     # if we're on Windows we don't need to see Apache + mod_perl modules
@@ -633,17 +638,24 @@ sub _PackageList {
             if ( $Module->{Depends} ) {
                 for my $ModuleSub ( @{ $Module->{Depends} } ) {
                     my %InstallCommandSub = _GetInstallCommand( $ModuleSub );
+
+                    next if !IsHashRefWithData(\%InstallCommandSub);
+
                     push @Packages, $InstallCommandSub{Package};
                 }
             }
 
-            $CMD = $InstallCommand{CMD};
+            next if !IsHashRefWithData(\%InstallCommand);
+
+            $CMD    = $InstallCommand{CMD};
+            $SubCMD = $InstallCommand{SubCMD};
             push @Packages, $InstallCommand{Package};
         }
     }
 
     return (
         CMD      => $CMD,
+        SubCMD   => $SubCMD,
         Packages => \@Packages,
     );
 }
@@ -670,6 +682,7 @@ sub _VersionClean {
 sub _GetInstallCommand {
     my ($Module) = @_;
     my $CMD;
+    my $SubCMD;
     my $Package;
 
     # returns the installation type e.g. ppm
@@ -683,6 +696,7 @@ sub _GetInstallCommand {
         # default is the cpan install command
         # e.g. cpan %s
         $CMD = $InstTypeToCMD{$InstType}->{CMD};
+        $SubCMD = $InstTypeToCMD{$InstType}->{SubCMD};
 
         # gets the target package
         if ( exists $Module->{InstTypes}->{$InstType} && !defined $Module->{InstTypes}->{$InstType} ) {
@@ -705,12 +719,14 @@ sub _GetInstallCommand {
 
     if ( !$CMD || !$Package ) {
         $CMD     = $InstTypeToCMD{default}->{CMD};
+        $SubCMD  = $InstTypeToCMD{default}->{SubCMD};
         $Package = $Module->{Module};
     }
 
     return (
-        'CMD'     => $CMD,
-        'Package' => $Package,
+        CMD     => $CMD,
+        SubCMD  => $SubCMD,
+        Package => $Package,
     );
 }
 
