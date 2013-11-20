@@ -78,6 +78,18 @@ our $EnvironmentObject = Kernel::System::Environment->new(
 );
 
 our %InstTypeToCMD = (
+    # [InstType] => {
+    #    CMD       => '[cmd to install module]',
+    #    UseModule => 1/0,
+    # }
+    # Set UseModule to 1 if you want to use the
+    # cpan module name of the package as replace string.
+    # e.g. yum install "perl(Date::Format)"
+    # If you set it 0 it will use the name
+    # for the InstType of the module
+    # e.g. apt-get install -y libtimedate-perl
+    # and as fallback the default cpan install command
+    # e.g. cpan DBD::Oracle
     aptget => {
         CMD       => 'apt-get install -y %s',
         UseModule => 0,
@@ -91,7 +103,7 @@ our %InstTypeToCMD = (
         UseModule => 1,
     },
     yum => {
-        CMD       => 'yum install "perl(%s)',
+        CMD       => 'yum install "perl(%s)"',
         UseModule => 1,
     },
     zypper => {
@@ -114,6 +126,7 @@ our %DistToInstType = (
     gentoo => 'gcpan',
 
     # yum
+    centos => 'yum',
     fedora => 'yum',
     rhel   => 'yum',
     redhat => 'yum',
@@ -153,6 +166,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libcrypt-eksblowfish-perl',
             ppm    => 'Crypt-Eksblowfish',
+            zypper => undef,
         },
     },
     {
@@ -203,6 +217,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libdb-odbc-perl',
             ppm    => 'DBD-ODBC',
+            yum    => undef,
         },
     },
     {
@@ -211,6 +226,7 @@ my @NeededModules = (
         Comment   => 'Required to connect to a Oracle database.',
         InstTypes => {
             ppm => 'DBD-Oracle',
+            yum => undef,
         },
     },
     {
@@ -552,6 +568,7 @@ sub _Check {
         # OS Install Command
         my $Install;
         my $PackageName;
+        my $OuputInstall = 1;
 
         # returns the installation type e.g. ppm
         my $InstType = $DistToInstType{$OSDist};
@@ -565,21 +582,34 @@ sub _Check {
             $Install = $InstTypeToCMD{$InstType}->{CMD};
 
             # gets the target package
-            # default is the cpan module name
             if ( $InstTypeToCMD{$InstType}->{UseModule} ) {
+                # default is the cpan module name
                 $PackageName = $Module->{Module};
             }
             else {
-                $PackageName = $Module->{InstTypes}->{$InstType};
+                if ( $Module->{InstTypes}->{$InstType} ) {
+                    # if the package name is defined for the installation type
+                    # e.g. ppm then we use this as package name
+                    $PackageName = $Module->{InstTypes}->{$InstType};
+                }
+                elsif ( exists $Module->{InstTypes}->{$InstType} && !defined $Module->{InstTypes}->{$InstType} ) {
+                    # if we a hash key for the installation type but a undefined value
+                    # then we prevent the output for the installation command
+                    $OuputInstall = 0;
+                }
             }
         }
         if ( !$Install || !$PackageName ) {
             $Install     = $InstTypeToCMD{default}->{CMD};
             $PackageName = $Module->{Module};
         }
-
-        # create example installation string for module
-        $Install = "Use: '" . sprintf( $Install, $PackageName ) . "'";
+        if ($OuputInstall) {
+            # create example installation string for module
+            $Install = " Use: '" . sprintf( $Install, $PackageName ) . "'";
+        }
+        else {
+            $Install = '';
+        }
 
         if ($Required) {
             $Required = 'required';
@@ -595,7 +625,7 @@ sub _Check {
             print color($Color)
                 . 'Not installed!'
                 . color('reset')
-                . " $Install ($Required$Comment)\n";
+                . "$Install ($Required$Comment)\n";
         }
     }
 
