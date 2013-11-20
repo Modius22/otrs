@@ -45,7 +45,6 @@ use File::Path;
 use Getopt::Long;
 use Term::ANSIColor;
 
-use Kernel::Config;
 use Kernel::System::Log;
 use Kernel::System::Main;
 use Kernel::System::DB;
