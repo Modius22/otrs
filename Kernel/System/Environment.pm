@@ -38,6 +38,7 @@ create environment object
     use Kernel::System::Encode;
     use Kernel::System::Log;
     use Kernel::System::Main;
+    use Kernel::System::DB;
     use Kernel::System::Environment;
 
     my $ConfigObject = Kernel::Config->new();
@@ -53,11 +54,18 @@ create environment object
         EncodeObject => $EncodeObject,
         LogObject    => $LogObject,
     );
+    my $DBObject = Kernel::System::DB->new(
+        ConfigObject => $ConfigObject,
+        EncodeObject => $EncodeObject,
+        LogObject    => $LogObject,
+        MainObject   => $MainObject,
+    );
     my $EnvironmentObject = Kernel::System::Environment->new(
         EncodeObject => $EncodeObject,
         ConfigObject => $ConfigObject,
         LogObject    => $LogObject,
         MainObject   => $MainObject,
+        DBObject     => $DBObject,
     );
 
 =cut
@@ -70,7 +78,7 @@ sub new {
     bless( $Self, $Type );
 
     # check needed objects
-    for (qw(ConfigObject LogObject MainObject EncodeObject)) {
+    for (qw(ConfigObject DBObject LogObject MainObject EncodeObject)) {
         $Self->{$_} = $Param{$_} || die "Got no $_!";
     }
 
@@ -358,23 +366,13 @@ returns
 sub DBInfoGet {
     my ( $Self, %Param ) = @_;
 
-    my $DBObject;
-    if ( $Self->{MainObject}->Require('Kernel::System::DB') ) {
-        $DBObject = Kernel::System::DB->new(
-            ConfigObject => $Self->{ConfigObject},
-            EncodeObject => $Self->{EncodeObject},
-            LogObject    => $Self->{LogObject},
-            MainObject   => $Self->{MainObject},
-        );
-    }
-
     # collect DB data
     my %EnvDB = (
         Host     => $Self->{ConfigObject}->Get('DatabaseHost'),
         Database => $Self->{ConfigObject}->Get('Database'),
         User     => $Self->{ConfigObject}->Get('DatabaseUser'),
         Type     => $Self->{ConfigObject}->Get('Database::Type') || $Self->{DBObject}->{'DB::Type'},
-        Version  => $DBObject->Version(),
+        Version  => $Self->{DBObject}->Version(),
     );
 
     return %EnvDB;

@@ -39,6 +39,7 @@ BEGIN {
     }
 }
 
+use Linux::Distribution;
 use ExtUtils::MakeMaker;
 use File::Path;
 use Getopt::Long;
@@ -51,26 +52,6 @@ use Kernel::System::DB;
 use Kernel::System::Environment;
 
 use Kernel::System::VariableCheck qw(:all);
-
-my $ConfigObject = Kernel::Config->new();
-my $EncodeObject = Kernel::System::Encode->new(
-    ConfigObject => $ConfigObject,
-);
-my $LogObject = Kernel::System::Log->new(
-    ConfigObject => $ConfigObject,
-    EncodeObject => $EncodeObject,
-);
-my $MainObject = Kernel::System::Main->new(
-    ConfigObject => $ConfigObject,
-    EncodeObject => $EncodeObject,
-    LogObject    => $LogObject,
-);
-our $EnvironmentObject = Kernel::System::Environment->new(
-    EncodeObject => $EncodeObject,
-    ConfigObject => $ConfigObject,
-    LogObject    => $LogObject,
-    MainObject   => $MainObject,
-);
 
 our %InstTypeToCMD = (
     # [InstType] => {
@@ -135,9 +116,7 @@ our %DistToInstType = (
     win32as => 'ppm',
 );
 
-my %OSData = $EnvironmentObject->OSInfoGet();
-our $OSDist = $OSData{Distribution};
-
+our $OSDist = Linux::Distribution::distribution_name();
 # set win32as if active state perl is installed on windows.
 # for windows installations without active state perl we use the default.
 if ( _CheckActiveStatePerl() ) {
@@ -223,9 +202,10 @@ my @NeededModules = (
         Required  => 0,
         Comment   => 'Required to connect to a Oracle database.',
         InstTypes => {
-            aptget => 'libdb-odbc-perl',
+            aptget => undef,
             ppm    => 'DBD-Oracle',
             yum    => undef,
+            zypper => undef,
         },
     },
     {
@@ -480,7 +460,7 @@ else {
     if ($AllModules) {
         print "\nBundled modules:\n\n";
 
-        my %PerlInfo = $EnvironmentObject->PerlInfoGet( BundledModules => 1, );
+        my %PerlInfo = Kernel::System::Environment->PerlInfoGet( BundledModules => 1, );
 
         for my $Module ( sort keys %{ $PerlInfo{Modules} } ) {
             _Check( { Module => $Module, Required => 1, }, $Depends, $NoColors );
@@ -502,7 +482,7 @@ sub _Check {
     my $Length = 33 - ( length( $Module->{Module} ) + ( $Depends * 2 ) );
     print '.' x $Length;
 
-    my $Version = $EnvironmentObject->ModuleVersionGet( Module => $Module->{Module} );
+    my $Version = Kernel::System::Environment->ModuleVersionGet( Module => $Module->{Module} );
     if ($Version) {
 
         # cleanup version number
@@ -631,7 +611,7 @@ sub _PackageList {
             return if $Module->{Module} =~ m{\A ModPerl }xms;
         }
 
-        my $Version = $EnvironmentObject->ModuleVersionGet( Module => $Module->{Module} );
+        my $Version = Kernel::System::Environment->ModuleVersionGet( Module => $Module->{Module} );
         if (!$Version) {
             my %InstallCommand = _GetInstallCommand($Module);
 
