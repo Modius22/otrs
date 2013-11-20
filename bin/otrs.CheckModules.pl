@@ -50,6 +50,8 @@ use Kernel::System::Main;
 use Kernel::System::DB;
 use Kernel::System::Environment;
 
+use Kernel::System::VariableCheck qw(:all);
+
 my $ConfigObject = Kernel::Config->new();
 my $EncodeObject = Kernel::System::Encode->new(
     ConfigObject => $ConfigObject,
@@ -148,7 +150,8 @@ if ( _CheckActiveStatePerl() ) {
 }
 
 my $AllModules;
-GetOptions( all => \$AllModules );
+my $PackageList;
+GetOptions( all => \$AllModules, list => \$PackageList );
 
 my $Options = shift || '';
 my $NoColors;
@@ -226,8 +229,8 @@ my @NeededModules = (
         Comment   => 'Required to connect to a Oracle database.',
         InstTypes => {
             aptget => 'libdb-odbc-perl',
-            ppm => 'DBD-Oracle',
-            yum => undef,
+            ppm    => 'DBD-Oracle',
+            yum    => undef,
         },
     },
     {
@@ -459,24 +462,32 @@ if ( $^O eq 'MSWin32' ) {
     push @NeededModules, @WindowsModules;
 }
 
-# try to determine module version number
-my $Depends = 0;
 
-for my $Module (@NeededModules) {
-    _Check( $Module, $Depends, $NoColors );
-}
+if ($PackageList) {
+    my %PackageList = _PackageList(\@NeededModules);
 
-if ($AllModules) {
-    print "\nBundled modules:\n\n";
-
-    my %PerlInfo = $EnvironmentObject->PerlInfoGet( BundledModules => 1, );
-
-    for my $Module ( sort keys %{ $PerlInfo{Modules} } ) {
-        _Check( { Module => $Module, Required => 1, }, $Depends, $NoColors );
+    if ( IsArrayRefWithData( $PackageList{Packages} ) ) {
+        printf join(' ', @{ $PackageList{Packages} } ) . "\n";
     }
 }
+else {
+    # try to determine module version number
+    my $Depends = 0;
 
-exit;
+    for my $Module (@NeededModules) {
+        _Check( $Module, $Depends, $NoColors );
+    }
+
+    if ($AllModules) {
+        print "\nBundled modules:\n\n";
+
+        my %PerlInfo = $EnvironmentObject->PerlInfoGet( BundledModules => 1, );
+
+        for my $Module ( sort keys %{ $PerlInfo{Modules} } ) {
+            _Check( { Module => $Module, Required => 1, }, $Depends, $NoColors );
+        }
+    }
+}
 
 sub _Check {
     my ( $Module, $Depends, $NoColors ) = @_;
@@ -567,47 +578,12 @@ sub _Check {
         my $Color    = 'yellow';
 
         # OS Install Command
-        my $Install;
-        my $PackageName;
-        my $OuputInstall = 1;
+        my %InstallCommand = _GetInstallCommand($Module);
 
-        # returns the installation type e.g. ppm
-        my $InstType = $DistToInstType{$OSDist};
-
-        if ($InstType) {
-
-            # gets the install command for installation type
-            # e.g. ppm install %s
-            # default is the cpan install command
-            # e.g. cpan %s
-            $Install = $InstTypeToCMD{$InstType}->{CMD};
-
-            # gets the target package
-            if ( exists $Module->{InstTypes}->{$InstType} && !defined $Module->{InstTypes}->{$InstType} ) {
-                # if we a hash key for the installation type but a undefined value
-                # then we prevent the output for the installation command
-                $OuputInstall = 0;
-            }
-            elsif ( $InstTypeToCMD{$InstType}->{UseModule} ) {
-                # default is the cpan module name
-                $PackageName = $Module->{Module};
-            }
-            else {
-                # if the package name is defined for the installation type
-                # e.g. ppm then we use this as package name
-                $PackageName = $Module->{InstTypes}->{$InstType};
-            }
-        }
-        if ( !$Install || !$PackageName ) {
-            $Install     = $InstTypeToCMD{default}->{CMD};
-            $PackageName = $Module->{Module};
-        }
-        if ($OuputInstall) {
-            # create example installation string for module
-            $Install = " Use: '" . sprintf( $Install, $PackageName ) . "'";
-        }
-        else {
-            $Install = '';
+        # create example installation string for module
+        my $InstallText;
+        if ( IsHashRefWithData(\%InstallCommand) ) {
+            $InstallText = " Use: '" . sprintf( $InstallCommand{CMD}, $InstallCommand{Package} ) . "'";
         }
 
         if ($Required) {
@@ -624,7 +600,7 @@ sub _Check {
             print color($Color)
                 . 'Not installed!'
                 . color('reset')
-                . "$Install ($Required$Comment)\n";
+                . "$InstallText ($Required$Comment)\n";
         }
     }
 
@@ -635,6 +611,41 @@ sub _Check {
     }
 
     return 1;
+}
+
+sub _PackageList {
+    my ( $PackageList ) = @_;
+
+    my $CMD;
+    my @Packages;
+
+    # if we're on Windows we don't need to see Apache + mod_perl modules
+    for my $Module ( @{$PackageList} ) {
+        if ( $^O eq 'MSWin32' ) {
+            return if $Module->{Module} =~ m{\A Apache }xms;
+            return if $Module->{Module} =~ m{\A ModPerl }xms;
+        }
+
+        my $Version = $EnvironmentObject->ModuleVersionGet( Module => $Module->{Module} );
+        if (!$Version) {
+            my %InstallCommand = _GetInstallCommand($Module);
+
+            if ( $Module->{Depends} ) {
+                for my $ModuleSub ( @{ $Module->{Depends} } ) {
+                    my %InstallCommandSub = _GetInstallCommand( $ModuleSub );
+                    push @Packages, $InstallCommandSub{Package};
+                }
+            }
+
+            $CMD = $InstallCommand{CMD};
+            push @Packages, $InstallCommand{Package};
+        }
+    }
+
+    return (
+        CMD      => $CMD,
+        Packages => \@Packages,
+    );
 }
 
 sub _VersionClean {
@@ -654,6 +665,53 @@ sub _VersionClean {
     }
 
     return int $CleanedVersion;
+}
+
+sub _GetInstallCommand {
+    my ($Module) = @_;
+    my $CMD;
+    my $Package;
+
+    # returns the installation type e.g. ppm
+    my $InstType = $DistToInstType{$OSDist};
+    my $OuputInstall = 1;
+
+    if ($InstType) {
+
+        # gets the install command for installation type
+        # e.g. ppm install %s
+        # default is the cpan install command
+        # e.g. cpan %s
+        $CMD = $InstTypeToCMD{$InstType}->{CMD};
+
+        # gets the target package
+        if ( exists $Module->{InstTypes}->{$InstType} && !defined $Module->{InstTypes}->{$InstType} ) {
+            # if we a hash key for the installation type but a undefined value
+            # then we prevent the output for the installation command
+            $OuputInstall = 0;
+        }
+        elsif ( $InstTypeToCMD{$InstType}->{UseModule} ) {
+            # default is the cpan module name
+            $Package = $Module->{Module};
+        }
+        else {
+            # if the package name is defined for the installation type
+            # e.g. ppm then we use this as package name
+            $Package = $Module->{InstTypes}->{$InstType};
+        }
+    }
+
+    return if !$OuputInstall;
+
+    if ( !$CMD || !$Package ) {
+        $CMD     = $InstTypeToCMD{default}->{CMD};
+        $Package = $Module->{Module};
+    }
+
+    return (
+        'CMD'     => $CMD,
+        'Package' => $Package,
+    );
 }
 
 sub _CheckActiveStatePerl {
