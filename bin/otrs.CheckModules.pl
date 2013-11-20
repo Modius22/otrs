@@ -225,6 +225,7 @@ my @NeededModules = (
         Required  => 0,
         Comment   => 'Required to connect to a Oracle database.',
         InstTypes => {
+            aptget => 'libdb-odbc-perl',
             ppm => 'DBD-Oracle',
             yum => undef,
         },
@@ -582,21 +583,19 @@ sub _Check {
             $Install = $InstTypeToCMD{$InstType}->{CMD};
 
             # gets the target package
-            if ( $InstTypeToCMD{$InstType}->{UseModule} ) {
+            if ( exists $Module->{InstTypes}->{$InstType} && !defined $Module->{InstTypes}->{$InstType} ) {
+                # if we a hash key for the installation type but a undefined value
+                # then we prevent the output for the installation command
+                $OuputInstall = 0;
+            }
+            elsif ( $InstTypeToCMD{$InstType}->{UseModule} ) {
                 # default is the cpan module name
                 $PackageName = $Module->{Module};
             }
             else {
-                if ( $Module->{InstTypes}->{$InstType} ) {
-                    # if the package name is defined for the installation type
-                    # e.g. ppm then we use this as package name
-                    $PackageName = $Module->{InstTypes}->{$InstType};
-                }
-                elsif ( exists $Module->{InstTypes}->{$InstType} && !defined $Module->{InstTypes}->{$InstType} ) {
-                    # if we a hash key for the installation type but a undefined value
-                    # then we prevent the output for the installation command
-                    $OuputInstall = 0;
-                }
+                # if the package name is defined for the installation type
+                # e.g. ppm then we use this as package name
+                $PackageName = $Module->{InstTypes}->{$InstType};
             }
         }
         if ( !$Install || !$PackageName ) {
