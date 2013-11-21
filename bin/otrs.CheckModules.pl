@@ -348,16 +348,6 @@ my @NeededModules = (
         },
     },
     {
-        Module    => 'Net::SSL',
-        Required  => 0,
-        Comment   => 'Required for Generic Interface SOAP SSL connections.',
-        InstTypes => {
-            aptget => 'libcrypt-ssleay-perl',
-            ppm    => 'Crypt-SSLeay',
-            zypper => 'perl-Net-SMTP-SSL',
-        },
-    },
-    {
         Module       => 'PDF::API2',
         Version      => '0.57',
         Required     => 0,
@@ -417,7 +407,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libxml-parser-perl',
             ppm    => 'XML-Parser',
-            zypper => 'XML-Parser',
+            zypper => 'perl-XML-Parser',
         },
     },
     {
