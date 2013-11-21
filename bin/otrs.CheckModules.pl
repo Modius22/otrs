@@ -172,7 +172,7 @@ my @NeededModules = (
         Required  => 0,
         Comment   => 'Required to connect to a MySQL database.',
         InstTypes => {
-            aptget => 'libdbi-mysql-perl',
+            aptget => 'libdbd-mysql-perl',
             ppm    => 'DBD-mysql',
         },
     },
@@ -188,7 +188,7 @@ my @NeededModules = (
         ],
         Comment   => 'Required to connect to a MS-SQL database.',
         InstTypes => {
-            aptget => 'libdb-odbc-perl',
+            aptget => 'libdbd-odbc-perl',
             ppm    => 'DBD-ODBC',
             yum    => undef,
         },
@@ -209,7 +209,7 @@ my @NeededModules = (
         Required  => 0,
         Comment   => 'Required to connect to a PostgreSQL database.',
         InstTypes => {
-            aptget => 'libdb-pg-perl',
+            aptget => 'libdbd-pg-perl',
             ppm    => 'DBD-Pg',
         },
     },
@@ -304,6 +304,7 @@ my @NeededModules = (
         Comment   => 'Improves Performance on Apache webservers dramatically.',
         InstTypes => {
             aptget => 'libapache2-mod-perl2',
+            zypper => 'apache2-mod_perl',
         },
     },
     {
@@ -319,6 +320,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libnet-dns-perl',
             ppm    => 'Net-DNS',
+            zypper => 'perl-Net-DNS',
         },
     },
     {
@@ -328,6 +330,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libnet-ldap-perl',
             ppm    => 'Net-LDAP',
+            zypper => 'perl-ldap-ssl',
         },
     },
     {
@@ -337,6 +340,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libcrypt-ssleay-perl',
             ppm    => 'Crypt-SSLeay',
+            zypper => 'perl-Net-SMTP-SSL',
         },
     },
     {
@@ -369,6 +373,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libpdf-api2-perl',
             ppm    => 'PDF-API2',
+            zypper => 'perl-PDF-API2',
         },
     },
     {
@@ -378,6 +383,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libtext-csv-xs-perl',
             ppm    => 'Text-CSV_XS',
+            zypper => 'perl-Text-CSV_XS',
         },
     },
     {
@@ -387,6 +393,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'perl',
             ppm    => 'Time-HiRes',
+            zypper => 'perl-Time-HiRes',
         },
     },
     {
@@ -396,6 +403,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libxml-parser-perl',
             ppm    => 'XML-Parser',
+            zypper => 'XML-Parser',
         },
     },
     {
@@ -405,6 +413,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libyaml-libyaml-perl',
             ppm    => 'YAML-XS',
+            zypper => 'perl-YAML-LibYAML',
         },
     },
 );
