@@ -80,9 +80,8 @@ our %InstTypeToCMD = (
         UseModule => 1,
     },
     zypper => {
-        CMD       => 'zypper install "%s"',
-        SubCMD    => 'perl(%s)',
-        UseModule => 1,
+        CMD       => 'zypper install %s',
+        UseModule => 0,
     },
     default => {
         CMD => 'cpan %s',
@@ -139,7 +138,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libcrypt-eksblowfish-perl',
             ppm    => 'Crypt-Eksblowfish',
-            zypper => undef,
+            zypper => 'perl-Crypt-Eksblowfish',
         },
     },
     {
@@ -149,6 +148,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libcrypt-ssleay-perl',
             ppm    => 'Crypt-SSLeay',
+            zypper => 'perl-Crypt-SSLeay',
         },
     },
     {
@@ -157,6 +157,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libtimedate-perl',
             ppm    => 'TimeDate',
+            zypper => 'perl-TimeDate',
         },
     },
     {
@@ -165,6 +166,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libdbi-perl',
             ppm    => 'DBI',
+            zypper => 'perl-DBI'
         },
     },
     {
@@ -174,6 +176,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libdbd-mysql-perl',
             ppm    => 'DBD-mysql',
+            zypper => 'perl-DBD-mysql'
         },
     },
     {
@@ -191,6 +194,7 @@ my @NeededModules = (
             aptget => 'libdbd-odbc-perl',
             ppm    => 'DBD-ODBC',
             yum    => undef,
+            zypper => undef,
         },
     },
     {
@@ -211,6 +215,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libdbd-pg-perl',
             ppm    => 'DBD-Pg',
+            zypper => 'perl-DBD-Pg',
         },
     },
     {
@@ -220,6 +225,7 @@ my @NeededModules = (
         Comment   => 'Required to handle mails with several Chinese character sets.',
         InstTypes => {
             aptget => 'libencode-hanextra-perl',
+            zypper => 'perl-Encode-HanExtra',
         },
     },
     {
@@ -229,6 +235,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libgd-gd2-perl',
             ppm    => 'GD',
+            zypper => 'perl-GD',
         },
         Depends => [
             {
@@ -238,7 +245,8 @@ my @NeededModules = (
                 InstTypes => {
                     aptget => 'libgd-text-perl',
                     ppm    => 'GDTextUtil',
-                    }
+                    zypper => 'perl-GDTextUtil',
+                },
             },
             {
                 Module    => 'GD::Graph',
@@ -247,6 +255,7 @@ my @NeededModules = (
                 InstTypes => {
                     aptget => 'libgd-graph-perl',
                     ppm    => 'GDGraph',
+                    zypper => 'perl-GDGraph',
                 },
             },
         ],
@@ -258,6 +267,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libio-socket-ssl-perl',
             ppm    => 'IO-Socket-SSL',
+            zypper => 'perl-IO-Socket-SSL',
         },
     },
     {
@@ -267,6 +277,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libjson-xs-perl',
             ppm    => 'JSON-XS',
+            zypper => 'perl-JSON-XS',
         },
     },
     {
@@ -275,6 +286,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libwww-perl',
             ppm    => 'libwww-perl',
+            zypper => 'perl-libwww-perl',
         },
     },
     {
@@ -285,6 +297,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libmail-imapclient-perl',
             ppm    => 'Mail-IMAPClient',
+            zypper => 'perl-Mail-IMAPClient',
         },
         Depends => [
             {
@@ -294,6 +307,7 @@ my @NeededModules = (
                 InstTypes => {
                     aptget => 'libio-socket-ssl-perl',
                     ppm    => 'IO-Socket-SSL',
+                    zypper => 'perl-IO-Socket-SSL',
                 },
             },
         ],
