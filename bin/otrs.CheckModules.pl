@@ -344,7 +344,7 @@ my @NeededModules = (
         InstTypes => {
             aptget => 'libnet-ldap-perl',
             ppm    => 'Net-LDAP',
-            zypper => 'perl-ldap-ssl',
+            zypper => 'perl-ldap',
         },
     },
     {
