@@ -137,77 +137,75 @@ sub Request {
 
     my $Response;
 
-    {
+    # init agent
+    my $UserAgent = LWP::UserAgent->new();
 
-        # init agent
-        my $UserAgent = LWP::UserAgent->new();
-
-        # In some scenarios like transparent HTTPS proxies, it can be neccessary to turn off
-        #   SSL certificate validation.
-        if ( $Kernel::OM->Get('Kernel::Config')->Get('WebUserAgent::DisableSSLVerification') ) {
-            $UserAgent->ssl_opts(
-                verify_hostname => 0,
-            );
-        }
-
-        # set credentials
-        if ( $Param{Credentials} ) {
-            my %CredentialParams    = %{ $Param{Credentials} || {} };
-            my @Keys                = qw(Location Realm User Password);
-            my $AllCredentialParams = !first { !defined $_ } @CredentialParams{@Keys};
-
-            if ($AllCredentialParams) {
-                $UserAgent->credentials(
-                    @CredentialParams{@Keys},
-                );
-            }
-        }
-
-        # set headers
-        if ( $Param{Header} ) {
-            $UserAgent->default_headers(
-                HTTP::Headers->new( %{ $Param{Header} } ),
-            );
-        }
-
-        # set timeout
-        $UserAgent->timeout( $Self->{Timeout} );
-
-        # get database object
-        my $ConfigObject = $Kernel::OM->Get('Kernel::Config');
-
-        # set user agent
-        $UserAgent->agent(
-            $ConfigObject->Get('Product') . ' ' . $ConfigObject->Get('Version')
+    # In some scenarios like transparent HTTPS proxies, it can be neccessary to turn off
+    #   SSL certificate validation.
+    if ( $Kernel::OM->Get('Kernel::Config')->Get('WebUserAgent::DisableSSLVerification') ) {
+        $UserAgent->ssl_opts(
+            verify_hostname => 0,
         );
+    }
 
-        # set proxy
-        if ( $Self->{Proxy} ) {
-            $UserAgent->proxy( [ 'http', 'https', 'ftp' ], $Self->{Proxy} );
-        }
+    # set credentials
+    if ( $Param{Credentials} ) {
+        my %CredentialParams    = %{ $Param{Credentials} || {} };
+        my @Keys                = qw(Location Realm User Password);
+        my $AllCredentialParams = !first { !defined $_ } @CredentialParams{@Keys};
 
-        if ( $Param{Type} eq 'GET' ) {
-
-            # perform get request on URL
-            $Response = $UserAgent->get( $Param{URL} );
-        }
-
-        else {
-
-            # check for Data param
-            if ( !IsArrayRefWithData( $Param{Data} ) && !IsHashRefWithData( $Param{Data} ) ) {
-                $Kernel::OM->Get('Kernel::System::Log')->Log(
-                    Priority => 'error',
-                    Message =>
-                        'WebUserAgent POST: Need Data param containing a hashref or arrayref with data.',
-                );
-                return ( Status => 0 );
-            }
-
-            # perform post request plus data
-            $Response = $UserAgent->post( $Param{URL}, $Param{Data} );
+        if ($AllCredentialParams) {
+            $UserAgent->credentials(
+                @CredentialParams{@Keys},
+            );
         }
     }
+
+    # set headers
+    if ( $Param{Header} ) {
+        $UserAgent->default_headers(
+            HTTP::Headers->new( %{ $Param{Header} } ),
+        );
+    }
+
+    # set timeout
+    $UserAgent->timeout( $Self->{Timeout} );
+
+    # get database object
+    my $ConfigObject = $Kernel::OM->Get('Kernel::Config');
+
+    # set user agent
+    $UserAgent->agent(
+        $ConfigObject->Get('Product') . ' ' . $ConfigObject->Get('Version')
+    );
+
+    # set proxy
+    if ( $Self->{Proxy} ) {
+        $UserAgent->proxy( [ 'http', 'https', 'ftp' ], $Self->{Proxy} );
+    }
+
+    if ( $Param{Type} eq 'GET' ) {
+
+        # perform get request on URL
+        $Response = $UserAgent->get( $Param{URL} );
+    }
+
+    else {
+
+        # check for Data param
+        if ( !IsArrayRefWithData( $Param{Data} ) && !IsHashRefWithData( $Param{Data} ) ) {
+            $Kernel::OM->Get('Kernel::System::Log')->Log(
+                Priority => 'error',
+                Message =>
+                    'WebUserAgent POST: Need Data param containing a hashref or arrayref with data.',
+            );
+            return ( Status => 0 );
+        }
+
+        # perform post request plus data
+        $Response = $UserAgent->post( $Param{URL}, $Param{Data} );
+    }
+
     if ( !$Response->is_success() ) {
         $Kernel::OM->Get('Kernel::System::Log')->Log(
             Priority => 'error',
